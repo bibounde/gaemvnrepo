@@ -40,6 +40,22 @@ public enum ConfigurationUtil {
         return this.properties.getProperty("version.vaadin");
     }
     
+    /**
+     * Retrieves application name
+     * @return application name
+     */
+    public String getApplicationName() {
+        return this.properties.getProperty("name");
+    }
+    
+    /**
+     * Retrieves application build
+     * @return application build
+     */
+    public String getApplicationBuild() {
+        return this.properties.getProperty("build");
+    }
+    
     public int getUserTablePageSize() {
         return Integer.valueOf(this.properties.getProperty("table.user.pagesize"));
     }
