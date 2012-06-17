@@ -1,0 +1,40 @@
+@import "../reindeer/styles.css";
+
+.gaemvnrepo-status-bar {
+    background: #FAFAFA;
+    background: -moz-linear-gradient(#FAFAFA, #EAEAEA);
+    background: -webkit-linear-gradient(#FAFAFA, #EAEAEA);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#fafafa',endColorstr='#eaeaea')";
+    position: relative;
+    border-bottom: 1px solid #CACACA;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4),0 0 10px rgba(0, 0, 0, 0.1);
+    text-shadow: #FFFFFF 0px 1px 0px;
+}
+
+.gaemvnrepo-status-bar-label {
+    color : #C3C3C3;
+}
+
+.gaemvnrepo-status-bar-caption {
+    font-size: 16px;
+    line-height: 22px;
+    color: #6E6E6E;
+    font-weight: bold;
+}
+
+.gaemvnrepo-version {
+    font-size: 10px;
+    text-shadow: #000000 0px 1px 0px;
+    color: #CACACA;
+    text-shadow: #FFFFFF 0px 1px 0px;
+}
+
+.gaemvnrepo-detail-title {
+    border-bottom: 1px solid #D5D8DB;
+    text-shadow: 0 1px 1px #C0C1C2;
+    font-size: 18px;
+}
+
+.gaemvnrepo-pagination-link .v-button-caption {
+    text-decoration:none;
+}
