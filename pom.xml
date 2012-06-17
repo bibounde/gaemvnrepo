@@ -321,6 +321,7 @@
 		<!-- Integration -->
 		<gae.application.name>gaemvnrepo</gae.application.name>
 		<gae.application.version>1</gae.application.version>
+		<gae.application.build></gae.application.build>
         <env.mode>PRODUCTION</env.mode>
 		
 	</properties>
@@ -361,6 +362,7 @@
                 <env.mode>DEV</env.mode>
                 <gae.application.version>test</gae.application.version>
                 <gae.application.name>gaemvnreponightlybuild</gae.application.name>
+                <gae.application.build>${BUILD_ID}</gae.application.build>
             </properties>
         </profile>
 	</profiles>
