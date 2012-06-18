@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 import com.bibounde.gaemvnrepo.model.User;
 import com.bibounde.gaemvnrepo.model.User.Role;
 import com.bibounde.gaemvnrepo.server.dao.UserDao;
-import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
-import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil.Mode;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 
 @Component
@@ -34,7 +32,7 @@ public class UserDaoImpl implements UserDao {
         try {
             query = pm.newQuery(User.class);
             
-            StringBuilder filter = new StringBuilder("email == emailParam");
+            StringBuilder filter = new StringBuilder("email == emailParam && disposable == false");
             if (filterActivation) {
                 filter.append(" && active == true");
             }
@@ -60,7 +58,7 @@ public class UserDaoImpl implements UserDao {
         try {
             query = pm.newQuery(User.class);
             
-            StringBuilder filter = new StringBuilder("role == roleParam");
+            StringBuilder filter = new StringBuilder("role == roleParam && disposable == false");
             if (filterActivation) {
                 filter.append(" && active == true");
             }
@@ -85,7 +83,7 @@ public class UserDaoImpl implements UserDao {
         try {
             query = pm.newQuery(User.class);
             
-            StringBuilder filter = new StringBuilder("login == loginParam");
+            StringBuilder filter = new StringBuilder("login == loginParam && disposable == false");
             if (filterActivation) {
                 filter.append(" && active == true");
             }
@@ -110,6 +108,7 @@ public class UserDaoImpl implements UserDao {
         Query query = null;
         try {
             query = pm.newQuery(User.class);
+            query.setFilter("disposable == false");
             query.setResult("count(this)");
             
             return (Integer) query.execute();
@@ -123,44 +122,7 @@ public class UserDaoImpl implements UserDao {
     }
     
     @Override
-    public List<User> findAll(PersistenceManager pm) throws TechnicalException {
-        Query query = null;
-        try {
-            query = pm.newQuery(User.class);
-            List<User> ret = (List<User>) query.execute();
-            
-            return ret;
-        } catch (Exception e) {
-            throw new TechnicalException("Unable to execute query", e);
-        } finally {
-            if (query != null) {
-                query.closeAll();
-            }
-        }
-    }
-
-    @Override
-    public void delete(String login, PersistenceManager pm) throws TechnicalException {
-        if (ConfigurationUtil.INSTANCE.getMode() != Mode.DEV) {
-            throw new TechnicalException("Delete all is only available in DEV mode", null);
-        }
-        Query query = null;
-        try {
-            query = pm.newQuery(User.class);
-            query.setFilter("login == loginParam");
-            query.declareParameters("String loginParam");
-            
-            List<User> users = (List<User>) query.execute(login);
-            
-            if (!users.isEmpty()) {
-                pm.deletePersistent(users.get(0));
-            }
-        } catch (Exception e) {
-            throw new TechnicalException("Unable to execute query", e);
-        } finally {
-            if (query != null) {
-                query.closeAll();
-            }
-        }
+    public void delete(User user, PersistenceManager pm) throws TechnicalException {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

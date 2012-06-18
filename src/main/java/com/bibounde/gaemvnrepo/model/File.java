@@ -14,7 +14,7 @@ import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 //Not supported by GAE @Unique(name = "FILE_UNIQUE_IDX", members = { "path" })
-public class File implements Serializable {
+public class File implements Disposable {
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -44,8 +44,7 @@ public class File implements Serializable {
     @Persistent
     private Blob content;
     
-    @Persistent
-    private boolean deprecated;
+    private boolean disposable;
 
     /**
      * @return the path
@@ -176,17 +175,13 @@ public class File implements Serializable {
         this.mime = mime;
     }
 
-    /**
-     * @return the deprecated
-     */
-    public boolean isDeprecated() {
-        return deprecated;
+    @Override
+    public boolean isDisposable() {
+        return disposable;
     }
 
-    /**
-     * @param deprecated the deprecated to set
-     */
-    public void setDeprecated(boolean deprecated) {
-        this.deprecated = deprecated;
+    @Override
+    public void setDisposable(boolean disposable) {
+        this.disposable = disposable;
     }
 }

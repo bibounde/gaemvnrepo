@@ -21,6 +21,9 @@ import com.bibounde.gaemvnrepo.server.dao.RepositoryDao;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.service.RepositoryService;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 
 @Service("repositoryService")
 public class RepositoryServiceImpl implements RepositoryService {
@@ -94,6 +97,8 @@ public class RepositoryServiceImpl implements RepositoryService {
         } catch (Exception e) {
             throw new TechnicalException("Persistence initialization failed", e);
         }
+        
+        List<String> filesToDelete = new ArrayList<String>();
 
         try {
             tx.begin();
@@ -144,7 +149,7 @@ public class RepositoryServiceImpl implements RepositoryService {
             file.setCreationDate(System.currentTimeMillis());
             file.setCreator(creatorName);
             file.setDepth(splittedPath.length - 2);
-            file.setDeprecated(false);
+            file.setDisposable(false);
             file.setFile(false);
             file.setName(splittedPath[splittedPath.length - 1]);
             file.setPath(filePath);
@@ -159,9 +164,10 @@ public class RepositoryServiceImpl implements RepositoryService {
                 List<File> toCheck = this.repositoryDao.findAllFiles(dirPath, pm);
                 if (!toCheck.isEmpty()) {
                     for (File f : toCheck) {
-                        if (!f.equals(found) && !f.isDeprecated() && this.isSnaspshotsOfSameFile(filePath, f.getPath())) {
+                        if (!f.equals(found) && !f.isDisposable() && this.isSnaspshotsOfSameFile(filePath, f.getPath())) {
                             logger.trace("{} will be deprecated", f.getPath());
-                            f.setDeprecated(true);
+                            f.setDisposable(true);
+                            filesToDelete.add(f.getPath());
                         }
                     }   
                 }
@@ -179,6 +185,16 @@ public class RepositoryServiceImpl implements RepositoryService {
                 tx.rollback();
             }
             pm.close();
+        }
+        
+        //Add file to delete in queue. Not in the transaction for quotas reason
+        try {
+            Queue queue = QueueFactory.getDefaultQueue();
+            for (String toDeletePath : filesToDelete) {
+                queue.add(TaskOptions.Builder.withUrl("/tasks/delete/file").param("filepath", toDeletePath).param("repository", name));
+            }
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to perform queue operation", e);
         }
     }
 
@@ -292,41 +308,6 @@ public class RepositoryServiceImpl implements RepositoryService {
     }
 
     @Override
-    public void cleanUp(String name) throws TechnicalException, BusinessException {
-        PersistenceManager pm = null;
-        Transaction tx = null;
-        try {
-            pm = PMF.get().getPersistenceManager();
-            tx = pm.currentTransaction();
-        } catch (Exception e) {
-            throw new TechnicalException("Persistence initialization failed", e);
-        }
-
-        try {
-            tx.begin();
-            Repository repository = this.repositoryDao.findByName(name, pm);
-            if (repository == null || !repository.isSnapshots()) {
-                throw new BusinessException(name + " does not exist or not a snapshot repository");
-            }
-
-            List<File> deprecatedFiles = this.repositoryDao.findDeprecatedFiles(name, pm);
-            for (File file : deprecatedFiles) {
-                logger.debug("Delete deprecated file {}", file.getPath());
-                pm.deletePersistent(file);
-            }
-            
-            tx.commit();
-        } catch (Exception e) {
-            throw new TechnicalException("Unable to persist", e);
-        } finally {
-            if (tx != null && tx.isActive()) {
-                tx.rollback();
-            }
-            pm.close();
-        }
-    }
-
-    @Override
     public List<String> findSnapshotsReposiroryNames() throws TechnicalException {
         PersistenceManager pm = null;
         try {
@@ -347,6 +328,45 @@ public class RepositoryServiceImpl implements RepositoryService {
         } catch (Exception e) {
             throw new TechnicalException("Unable to read in db", e);
         } finally {
+            pm.close();
+        }
+    }
+
+    @Override
+    public void deleteFile(String name, String filePath) throws TechnicalException, BusinessException {
+        PersistenceManager pm = null;
+        Transaction tx = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+            tx = pm.currentTransaction();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            tx.begin();
+            Repository repository = this.repositoryDao.findByName(name, pm);
+            if (repository == null) {
+                throw new BusinessException(name + " is not a valid repository");
+            }
+            this.checkFileQueryParam(repository, filePath, pm);
+
+            File disposableFile = this.repositoryDao.findDisposableFileByPath(filePath, pm);
+            
+            if (disposableFile != null) {
+                logger.debug("Performs deletion of {}", disposableFile.getPath());
+                pm.deletePersistent(disposableFile);
+            } else {
+                logger.debug("{} not found", filePath);
+            }
+            
+            tx.commit();
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to persist", e);
+        } finally {
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             pm.close();
         }
     }

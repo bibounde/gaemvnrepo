@@ -36,6 +36,7 @@
 	    <intercept-url pattern="/repo/**" access="hasAnyRole('admin','manager')" method="POST"/>
 	    
 	    <intercept-url pattern="/cron/**" access="permitAll" />
+	    <intercept-url pattern="/tasks/**" access="permitAll" />
 		<intercept-url pattern="/login*" access="permitAll" />
 		<http-basic/>
 		<form-login login-page='/login' authentication-failure-url="/login_error" default-target-url="/admin"/>

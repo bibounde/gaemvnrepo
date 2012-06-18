@@ -60,17 +60,4 @@ public interface UserService extends Serializable {
      */
     @PreAuthorize("hasAnyRole('admin', 'manager')")
     UserListResponse getUsers(UserListQuery query) throws TechnicalException, BusinessException;
-    
-    /**
-     * Deletes user with specified login
-     * @throws TechnicalException
-     */
-    void deleteUser(String login) throws TechnicalException;
-  
-    /**
-     * Retrieves all users
-     * @return user login list
-     * @throws TechnicalException
-     */
-    List<String> findAllUsers() throws TechnicalException;
 }

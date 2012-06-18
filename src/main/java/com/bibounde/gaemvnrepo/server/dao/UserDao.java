@@ -58,18 +58,10 @@ public interface UserDao extends Serializable {
     int count(PersistenceManager pm) throws TechnicalException;
     
     /**
-     * Retrieves all user
-     * @param pm persistence manager
-     * @return user list
-     * @throws TechnicalException
-     */
-    List<User> findAll(PersistenceManager pm) throws TechnicalException;
-    
-    /**
-     * Deletes user
-     * @param login user login
+     * Delete user
+     * @param user user to delete
      * @param pm persistence manager
      * @throws TechnicalException
      */
-    void delete(String login, PersistenceManager pm) throws TechnicalException;
+    void delete(User user, PersistenceManager pm) throws TechnicalException;
 }

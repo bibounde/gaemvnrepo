@@ -16,7 +16,6 @@ import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.themes.BaseTheme;
-import com.vaadin.ui.themes.Reindeer;
 
 public class StatusBar extends HorizontalLayout implements View {
     
@@ -57,7 +56,7 @@ public class StatusBar extends HorizontalLayout implements View {
         this.caption = new Label("GAE MVN Repository");
         this.caption.setStyleName("gaemvnrepo-status-bar-caption");
         
-        this.version = new Label(Messages.INSTANCE.getString(ConfigurationUtil.INSTANCE.getApplicationName(), this.getLocale()));
+        this.version = new Label(Messages.INSTANCE.getString("StatusBar." + ConfigurationUtil.INSTANCE.getApplicationName(), this.getLocale()));
         this.version.setStyleName("gaemvnrepo-version");
         this.version.setDescription(ConfigurationUtil.INSTANCE.getApplicationVersion() + " - " + ConfigurationUtil.INSTANCE.getApplicationBuild());
         

@@ -12,6 +12,7 @@ import com.bibounde.gaemvnrepo.model.User;
 import com.bibounde.gaemvnrepo.model.User.Role;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
+import com.bibounde.gaemvnrepo.shared.service.DevService;
 import com.bibounde.gaemvnrepo.shared.service.RepositoryService;
 import com.bibounde.gaemvnrepo.shared.service.UserService;
 
@@ -24,21 +25,23 @@ public class Initializer {
     private UserService userService;
     
     @Autowired
+    private DevService devService;
+    
+    @Autowired
     private RepositoryService repositoryService;
     
     public void init() {
         logger.info("Initialization started");
         try {
             if (ConfigurationUtil.Mode.DEV == ConfigurationUtil.INSTANCE.getMode()) {
-                logger.info("DEV mode activated");
+                logger.info("------- DEV mode start ------");
                 
-                List<String> loginToDelete = this.userService.findAllUsers();
-                for (String login : loginToDelete) {
-                    this.userService.deleteUser(login);
-                }
+                logger.info("Deletes all entities");
+                this.devService.deleteAll();
                 
+                logger.info("Creates test users");
                 Random rd = new Random();
-                for (int i = 0; i < 100; i++) {
+                for (int i = 0; i < 55; i++) {
                     User user = new User();
                     user.setActive(rd.nextBoolean());
                     user.setEmail("email-" + user.hashCode() + "gmail.com");
@@ -49,6 +52,8 @@ public class Initializer {
                     
                     userService.createUser(user);
                 }
+                
+                logger.info("------- DEV mode end ------");
             }
             
             if (!userService.userAdminExists()) {
@@ -66,7 +71,7 @@ public class Initializer {
             }
             
         } catch (TechnicalException e) {
-            logger.error("Unable to create admin user", e);
+            logger.error("Unable to perform initialization", e);
         }
         logger.info("Initialization done");
     }

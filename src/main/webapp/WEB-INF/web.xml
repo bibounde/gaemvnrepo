@@ -83,18 +83,21 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>CleanUpSnapshotServlet</servlet-name>
-        <servlet-class>com.bibounde.gaemvnrepo.web.cron.CleanUpSnapshotServlet</servlet-class>
+        <servlet-name>FileDeletionServlet</servlet-name>
+        <servlet-class>com.bibounde.gaemvnrepo.web.queue.FileDeletionServlet</servlet-class>
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>CleanUpSnapshotServlet</servlet-name>
-        <url-pattern>/cron/cleanupsnapshots</url-pattern>
+        <servlet-name>FileDeletionServlet</servlet-name>
+        <url-pattern>/tasks/delete/file</url-pattern>
     </servlet-mapping>
     
     <security-constraint>
         <web-resource-collection>
             <url-pattern>/cron/*</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <url-pattern>/tasks/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>

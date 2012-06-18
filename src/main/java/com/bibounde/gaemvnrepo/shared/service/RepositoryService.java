@@ -66,12 +66,13 @@ public interface RepositoryService extends Serializable{
     List<File> findAllFiles(String name, String dirPath) throws TechnicalException, BusinessException;
     
     /**
-     * Remove all old snapshots files
+     * Deletes file
      * @param name repository name
+     * @param filePath file path
      * @throws TechnicalException
      * @throws BusinessException
      */
-    void cleanUp(String name) throws TechnicalException, BusinessException;
+    void deleteFile(String name, String filePath) throws TechnicalException, BusinessException;
     
     /**
      * Retrieves snapshots repository

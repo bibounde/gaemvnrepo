@@ -11,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 //Not supported by GAE @Unique(name="USER_UNIQUE_IDX", members={"email"})
-public class User implements Serializable {
+public class User implements Disposable {
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -37,6 +37,9 @@ public class User implements Serializable {
     
     @Persistent
     private long created;
+    
+    @Persistent
+    private boolean disposable;
     
     public enum Role {
         ADMIN, MANAGER, UPLOADER;
@@ -152,6 +155,20 @@ public class User implements Serializable {
      */
     public void setCreated(long created) {
         this.created = created;
+    }
+
+    /**
+     * @return the disposable
+     */
+    public boolean isDisposable() {
+        return disposable;
+    }
+
+    /**
+     * @param disposable the disposable to set
+     */
+    public void setDisposable(boolean disposable) {
+        this.disposable = disposable;
     }
     
     

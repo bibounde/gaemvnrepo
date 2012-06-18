@@ -20,7 +20,7 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(Repository.class);
-            query.setFilter("name == nameParam");
+            query.setFilter("name == nameParam && disposable == false");
             query.declareParameters("String nameParam");
 
             List<Repository> repositories = (List<Repository>) query.execute(name);
@@ -40,7 +40,7 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(File.class);
-            query.setFilter("path == pathParam");
+            query.setFilter("path == pathParam && disposable == false");
             query.declareParameters("String pathParam");
 
             List<File> files = (List<File>) query.execute(path);
@@ -65,30 +65,10 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(File.class);
-            query.setFilter("path.startsWith(pathParam)");
+            query.setFilter("path.startsWith(pathParam) && disposable == false");
             query.declareParameters("String pathParam");
 
             List<File> files = (List<File>) query.execute(prefix);
-
-            return files;
-        } catch (Exception e) {
-            throw new TechnicalException("Unable to execute query", e);
-        } finally {
-            if (query != null) {
-                query.closeAll();
-            }
-        }
-    }
-
-    @Override
-    public List<File> findDeprecatedFiles(String repoName, PersistenceManager pm) throws TechnicalException {
-        Query query = null;
-        try {
-            query = pm.newQuery(File.class);
-            query.setFilter("deprecated == true && path.startsWith(repoNameParam)");
-            query.declareParameters("String repoNameParam");
-            
-            List<File> files = (List<File>) query.execute(repoName);
 
             return files;
         } catch (Exception e) {
@@ -105,11 +85,31 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(Repository.class);
-            query.setFilter("snapshots == true");
+            query.setFilter("snapshots == true && disposable == false");
             
             List<Repository> repositories = (List<Repository>) query.execute();
 
             return repositories;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to execute query", e);
+        } finally {
+            if (query != null) {
+                query.closeAll();
+            }
+        }
+    }
+
+    @Override
+    public File findDisposableFileByPath(String path, PersistenceManager pm) throws TechnicalException {
+        Query query = null;
+        try {
+            query = pm.newQuery(File.class);
+            query.setFilter("path == pathParam && disposable == true");
+            query.declareParameters("String pathParam");
+
+            List<File> files = (List<File>) query.execute(path);
+
+            return files.isEmpty() ? null : files.get(0);
         } catch (Exception e) {
             throw new TechnicalException("Unable to execute query", e);
         } finally {

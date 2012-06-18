@@ -365,6 +365,15 @@
                 <gae.application.build>${BUILD_ID}</gae.application.build>
             </properties>
         </profile>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <env.mode>DEV</env.mode>
+                <gae.application.version>test</gae.application.version>
+                <gae.application.name>local</gae.application.name>
+                <gae.application.build>${user.name}</gae.application.build>
+            </properties>
+        </profile>
 	</profiles>
 
 </project>
