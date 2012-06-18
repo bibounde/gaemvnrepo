@@ -18,7 +18,9 @@ import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.domain.Role;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserLogin;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.history.Historizable;
@@ -29,8 +31,9 @@ import com.bibounde.gaemvnrepo.web.admin.detail.repository.BrowseRepositoryView;
 import com.bibounde.gaemvnrepo.web.admin.detail.repository.RepositoryEditView;
 import com.bibounde.gaemvnrepo.web.admin.detail.system.SystemConfigurationView;
 import com.bibounde.gaemvnrepo.web.admin.detail.user.BrowserUserView;
-import com.bibounde.gaemvnrepo.web.admin.detail.user.BrowserViewHelper;
+import com.bibounde.gaemvnrepo.web.admin.detail.user.BrowserUserViewHelper;
 import com.bibounde.gaemvnrepo.web.admin.detail.user.UserEditView;
+import com.bibounde.gaemvnrepo.web.admin.detail.user.UserEditViewHelper;
 import com.bibounde.gaemvnrepo.web.admin.history.History;
 import com.bibounde.gaemvnrepo.web.admin.history.HistoryChangeListener;
 import com.bibounde.gaemvnrepo.web.admin.navigation.NavigationMenu;
@@ -57,7 +60,7 @@ public class AdminApplication extends Application implements Controller, History
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(AdminApplication.class);
 
-    private static final int DEFAULT_DETAIL_VIEW_SELECTED_INDEX = 4;
+    private static final int DEFAULT_DETAIL_VIEW_SELECTED_INDEX = 5;
     private Map<String, View> viewMap = new HashMap<String, View>();
     private List<String> detailViewIds = new ArrayList<String>();
     private int currentDetailViewIndex = -1;
@@ -70,7 +73,8 @@ public class AdminApplication extends Application implements Controller, History
     private Window window;
 
     private UriFragmentUtility uriFragmentUtility;
-    private BrowserViewHelper browserViewHelper = new BrowserViewHelper();
+    private BrowserUserViewHelper browserViewHelper = new BrowserUserViewHelper();
+    private UserEditViewHelper userEditViewHelper = new UserEditViewHelper();
 
     @Override
     public void init() {
@@ -218,16 +222,22 @@ public class AdminApplication extends Application implements Controller, History
                     int index = (Integer) actionParams[0];
                     View detailView = this.changeDetailView(index);
 
-                    history = new History();
-                    history.setAction(HistoryAction.ACTION_SHOW_DETAIL_VIEW);
-                    history.setViewId(detailView.getId());
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put(HistoryAction.KEY_INDEX, String.valueOf(index));
-                    history.setParams(params);
+                    //Disable history for "New User"
+                    if (!UserEditView.ID.equals(detailView.getId())) {
+                        history = new History();
+                        history.setAction(HistoryAction.ACTION_SHOW_DETAIL_VIEW);
+                        history.setViewId(detailView.getId());
+                        Map<String, String> params = new HashMap<String, String>();
+                        params.put(HistoryAction.KEY_INDEX, String.valueOf(index));
+                        history.setParams(params);
+                    }
+                    
 
                     if (BrowserUserView.ID.equals(detailView.getId())) {
                         this.browserViewHelper.initView();
-                    }
+                    } else if (UserEditView.ID.equals(detailView.getId())) {
+                        this.userEditViewHelper.initView();
+                    } 
                 }
             } else if (BrowserUserView.ID.equals(viewId)) {
                 Historizable historyItem = null;
@@ -250,6 +260,21 @@ public class AdminApplication extends Application implements Controller, History
                     history = new History();
                     history.setAction(HistoryAction.ACTION_CHANGE_USER_BROWSER_INFO);
                     history.setViewId(BrowserUserView.ID);
+                    history.setParams(historyItem.encode());
+                }
+            } else if (UserEditView.ID.equals(viewId)) {
+                Historizable historyItem = null;
+                if (UserEditView.ACTION_SAVED.equals(action)) {
+                    UserEditQuery user = (UserEditQuery) actionParams[0];
+                    logger.debug("User {} saved", user.login);
+                    historyItem = this.userEditViewHelper.userSaved(user, this.userService);
+                } else {
+                    logger.warn("{} action is not supported for {}", action, UserEditView.ID);
+                }
+                if (historyItem != null) {
+                    history = new History();
+                    history.setAction(HistoryAction.ACTION_SELECT_USER);
+                    history.setViewId(UserEditView.ID);
                     history.setParams(historyItem.encode());
                 }
             }
@@ -291,7 +316,12 @@ public class AdminApplication extends Application implements Controller, History
                UserListQuery query = new UserListQuery();
                query.load(history.getParams());
                this.browserViewHelper.refreshInfo(query, this.userService);
-            } else {
+            } else if (HistoryAction.ACTION_SELECT_USER.equals(history.getAction())) {
+                // Not necessary to change view with index. Already done.
+                UserLogin userLogin = new UserLogin();
+                userLogin.load(history.getParams());
+                this.userEditViewHelper.userSelected(userLogin, this.userService);
+             } else {
                 logger.warn("Action {} is not supported in history", history.getAction());
             }
         } catch (Exception e) {
@@ -333,6 +363,7 @@ public class AdminApplication extends Application implements Controller, History
                 this.browserViewHelper.setView((BrowserUserView) view);
             } else if (UserEditView.ID.equals(newViewId)) {
                 view = new UserEditView();
+                this.userEditViewHelper.setView((UserEditView) view);
             } else if (ProfileView.ID.equals(newViewId)) {
                 view = new ProfileView();
             } else {

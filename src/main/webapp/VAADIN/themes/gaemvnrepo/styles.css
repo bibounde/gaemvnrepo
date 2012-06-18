@@ -38,3 +38,15 @@
 .gaemvnrepo-pagination-link .v-button-caption {
     text-decoration:none;
 }
+
+.gaemvnrepo-form-layout {
+    background-color: #F6F6F6;
+}
+
+.gaemvnrepo-form {
+    background-color: #F6F6F6;
+}
+
+.gaemvnrepo-form-input {
+    width : 80%;
+}

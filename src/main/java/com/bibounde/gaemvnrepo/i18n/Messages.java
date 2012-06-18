@@ -8,6 +8,7 @@ public enum Messages {
     INSTANCE;
     
     private ResourceBundle resourceBundle;
+    private String[] supportedLanguages = {"en_GB"};
     
     private Messages() {
         this.resourceBundle = ResourceBundle.getBundle("messages");
@@ -22,5 +23,9 @@ public enum Messages {
      */
     public String getString(String key, Locale locale) {
         return this.resourceBundle.getString(key);
+    }
+    
+    public String[] getSupportedLanguages() {
+        return this.supportedLanguages;
     }
 }

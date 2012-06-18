@@ -7,6 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.bibounde.gaemvnrepo.model.User;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserEditResponse;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListResponse;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
@@ -28,6 +30,14 @@ public interface UserService extends Serializable {
      * @throws TechnicalException
      */
     User findUserActiveByEmail(String email) throws TechnicalException;
+    
+    /**
+     * Retrieves user by login
+     * @param login user's login
+     * @return user object or null if no user with specified login found
+     * @throws TechnicalException
+     */
+    UserEditResponse findUserByLogin(String login) throws TechnicalException;
     
     /**
      * Create user admin
@@ -60,4 +70,15 @@ public interface UserService extends Serializable {
      */
     @PreAuthorize("hasAnyRole('admin', 'manager')")
     UserListResponse getUsers(UserListQuery query) throws TechnicalException, BusinessException;
+    
+    /**
+     * Saves user
+     * @param userToSave user to save
+     * @param edition true means that user is already in db
+     * @return user
+     * @throws TechnicalException
+     * @throws BusinessException
+     */
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    UserEditResponse save(UserEditQuery userToSave, boolean edition) throws TechnicalException, BusinessException;
 }

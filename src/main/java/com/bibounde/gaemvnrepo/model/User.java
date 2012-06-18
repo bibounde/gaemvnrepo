@@ -42,7 +42,7 @@ public class User implements Disposable {
     private boolean disposable;
     
     public enum Role {
-        ADMIN, MANAGER, UPLOADER;
+        ADMIN, MANAGER, UPLOADER, USER;
     }
 
     /**

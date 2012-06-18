@@ -12,12 +12,12 @@ import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 public interface UserDao extends Serializable {
 
     /**
-     * Creates a user
+     * Save or update a user
      * @param user user to create
      * @param pm persistence manager
      * @throws TechnicalException
      */
-    void createUser(User user, PersistenceManager pm) throws TechnicalException;
+    void saveOrUpdate(User user, PersistenceManager pm) throws TechnicalException;
     
     /**
      * Retrieves user by email. 

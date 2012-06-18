@@ -16,8 +16,12 @@ import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 public class UserDaoImpl implements UserDao {
 
     @Override
-    public void createUser(User user, PersistenceManager pm) throws TechnicalException {
+    public void saveOrUpdate(User user, PersistenceManager pm) throws TechnicalException {
         try {
+            if (user.getLogin() == null || user.getLogin().length() < 4 || user.getLogin().length() > 25) {
+                throw new IllegalArgumentException("User login is invalid. Login length must be between 3 and 25");
+            }
+            
             user.setCreated(System.currentTimeMillis());
             pm.makePersistent(user);
         } catch (Exception e) {

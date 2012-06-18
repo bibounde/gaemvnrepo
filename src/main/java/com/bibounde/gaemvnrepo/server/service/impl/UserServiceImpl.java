@@ -12,6 +12,8 @@ import javax.jdo.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import com.bibounde.gaemvnrepo.server.PMF;
 import com.bibounde.gaemvnrepo.server.dao.UserDao;
 import com.bibounde.gaemvnrepo.server.service.util.GravatarUtil;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserEditResponse;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListItem;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListResponse;
@@ -50,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             tx.begin();
-            userDao.createUser(user, pm);
+            userDao.saveOrUpdate(user, pm);
             tx.commit();
         
         } catch (TechnicalException e) {
@@ -108,7 +112,7 @@ public class UserServiceImpl implements UserService {
         admin.setLogin("admin");
         admin.setRole(Role.ADMIN);
         admin.setActive(true);
-        admin.setLocale(Locale.ENGLISH.getLanguage() + "_" + Locale.ENGLISH.getCountry());
+        admin.setLocale("en_GB");
         this.createUser(admin);
     }
 
@@ -217,6 +221,93 @@ public class UserServiceImpl implements UserService {
             if (query != null) {
                 query.closeAll();
             }
+            pm.close();
+        }
+    }
+
+    @Override
+    public UserEditResponse save(UserEditQuery userToSave, boolean edition) throws TechnicalException, BusinessException {
+        PersistenceManager pm = null;
+        Transaction tx = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+            tx = pm.currentTransaction();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            tx.begin();
+            
+            User user = null;
+            if (edition) {
+                user = this.userDao.findUserByLogin(userToSave.login, false, pm);
+                if (user == null) {
+                    throw new BusinessException("User with login " + userToSave.login + " does not exist");
+                }
+            } else {
+                user = new User();
+                user.setLogin(userToSave.login);
+            }
+            
+            user.setActive(userToSave.active);
+            user.setEmail(userToSave.email);
+            user.setLocale(userToSave.locale);
+            user.setRole(userToSave.administrator ? Role.ADMIN:Role.USER);
+            
+            if (userToSave.password != null && !userToSave.password.isEmpty()) {
+                user.setPassword(new Md5PasswordEncoder().encodePassword(userToSave.password, null));
+            }
+            
+            userDao.saveOrUpdate(user, pm);
+            
+            UserEditResponse ret = new UserEditResponse();
+            ret.active = user.isActive();
+            ret.administrator = user.getRole() == Role.ADMIN;
+            ret.email = user.getEmail();
+            ret.locale = user.getLocale();
+            ret.login = user.getLogin();
+            
+            tx.commit();
+        
+            return ret;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (TechnicalException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to persist", e);
+        } finally {
+            if (tx != null && tx.isActive()) {
+                    tx.rollback();
+            }
+            pm.close();
+        }
+    }
+
+    @Override
+    public UserEditResponse findUserByLogin(String login) throws TechnicalException {
+        PersistenceManager pm = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+        
+        try {
+            User user = this.userDao.findUserByLogin(login, false, pm);
+            
+            UserEditResponse ret = new UserEditResponse();
+            ret.active = user.isActive();
+            ret.administrator = user.getRole() == Role.ADMIN;
+            ret.email = user.getEmail();
+            ret.locale = user.getLocale();
+            ret.login = user.getLogin();
+            
+            return ret;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to execute query", e);
+        } finally {
             pm.close();
         }
     }
