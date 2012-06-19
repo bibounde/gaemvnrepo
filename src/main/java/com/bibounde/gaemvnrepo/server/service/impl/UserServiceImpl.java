@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -226,7 +225,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEditResponse save(UserEditQuery userToSave, boolean edition) throws TechnicalException, BusinessException {
+    public UserEditResponse saveUser(UserEditQuery userToSave, boolean edition) throws TechnicalException, BusinessException {
         PersistenceManager pm = null;
         Transaction tx = null;
         try {
@@ -262,6 +261,7 @@ public class UserServiceImpl implements UserService {
             userDao.saveOrUpdate(user, pm);
             
             UserEditResponse ret = new UserEditResponse();
+            ret.id = user.getId();
             ret.active = user.isActive();
             ret.administrator = user.getRole() == Role.ADMIN;
             ret.email = user.getEmail();
@@ -296,18 +296,76 @@ public class UserServiceImpl implements UserService {
         
         try {
             User user = this.userDao.findUserByLogin(login, false, pm);
-            
-            UserEditResponse ret = new UserEditResponse();
-            ret.active = user.isActive();
-            ret.administrator = user.getRole() == Role.ADMIN;
-            ret.email = user.getEmail();
-            ret.locale = user.getLocale();
-            ret.login = user.getLogin();
-            
-            return ret;
+            return user != null ? this.createUserEditResponse(user) : null;
         } catch (Exception e) {
             throw new TechnicalException("Unable to execute query", e);
         } finally {
+            pm.close();
+        }
+    }
+    
+    @Override
+    public UserEditResponse findUserById(long login) throws TechnicalException {
+        PersistenceManager pm = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+        
+        try {
+            User user = this.userDao.findUserById(login, false, pm);
+            return user != null ? this.createUserEditResponse(user) : null;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to execute query", e);
+        } finally {
+            pm.close();
+        }
+    }
+    
+    private UserEditResponse createUserEditResponse(User user) {
+        UserEditResponse ret = new UserEditResponse();
+        ret.id = user.getId();
+        ret.active = user.isActive();
+        ret.administrator = user.getRole() == Role.ADMIN;
+        ret.email = user.getEmail();
+        ret.locale = user.getLocale();
+        ret.login = user.getLogin();
+        
+        return ret;
+    }
+
+    @Override
+    public void deleteUser(long id) throws TechnicalException, BusinessException {
+        PersistenceManager pm = null;
+        Transaction tx = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+            tx = pm.currentTransaction();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            tx.begin();
+            User toDelete = this.userDao.findUserById(id, false, pm);
+            if (toDelete != null) {
+                if (toDelete.getLogin().equals(SecurityContextHolder.getContext().getAuthentication().getName())) {
+                    throw new BusinessException("Unable to delete authenticated user");
+                }
+                this.userDao.delete(toDelete, pm);
+            }
+            
+            tx.commit();
+        
+        } catch (TechnicalException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to persist", e);
+        } finally {
+            if (tx != null && tx.isActive()) {
+                    tx.rollback();
+            }
             pm.close();
         }
     }

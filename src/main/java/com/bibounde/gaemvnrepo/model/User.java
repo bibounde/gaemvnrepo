@@ -1,7 +1,5 @@
 package com.bibounde.gaemvnrepo.model;
 
-import java.io.Serializable;
-
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NullValue;
@@ -10,7 +8,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-//Not supported by GAE @Unique(name="USER_UNIQUE_IDX", members={"email"})
+//Not supported by GAE @Unique(name="USER_UNIQUE_IDX", members={"login", "email"})
 public class User implements Disposable {
     
     @PrimaryKey

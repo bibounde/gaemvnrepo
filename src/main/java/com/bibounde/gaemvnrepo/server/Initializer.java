@@ -1,6 +1,5 @@
 package com.bibounde.gaemvnrepo.server;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -44,7 +43,7 @@ public class Initializer {
                 for (int i = 0; i < 55; i++) {
                     User user = new User();
                     user.setActive(rd.nextBoolean());
-                    user.setEmail("email-" + user.hashCode() + "gmail.com");
+                    user.setEmail("email-" + user.hashCode() + "@gmail.com");
                     user.setLocale(Locale.ENGLISH.getLanguage() + "_" + Locale.ENGLISH.getCountry());
                     user.setLogin("login" + user.hashCode());
                     user.setPassword("fe01ce2a7fbac8fafaed7c982a04e229");

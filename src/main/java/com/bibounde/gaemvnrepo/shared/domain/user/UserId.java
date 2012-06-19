@@ -5,21 +5,21 @@ import java.util.Map;
 
 import com.bibounde.gaemvnrepo.shared.history.Historizable;
 
-public class UserLogin implements Historizable {
+public class UserId implements Historizable {
 
     private static final String KEY_INDEX = "index";
     
-    public String login;
+    public long id;
 
     @Override
     public void load(Map<String, String> historyParams) {
-        this.login = historyParams.get(KEY_INDEX);
+        this.id = Long.valueOf(historyParams.get(KEY_INDEX));
     }
 
     @Override
     public Map<String, String> encode() {
         Map<String, String> ret = new HashMap<String, String>();
-        ret.put(KEY_INDEX, this.login);
+        ret.put(KEY_INDEX, String.valueOf(this.id));
         return ret;
     }
 }

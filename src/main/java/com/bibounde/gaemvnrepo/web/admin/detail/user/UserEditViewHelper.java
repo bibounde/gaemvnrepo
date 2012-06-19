@@ -1,14 +1,13 @@
 package com.bibounde.gaemvnrepo.web.admin.detail.user;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditResponse;
-import com.bibounde.gaemvnrepo.shared.domain.user.UserLogin;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserId;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.history.Historizable;
@@ -36,28 +35,53 @@ public class UserEditViewHelper implements Serializable {
         this.getModel().initUser(null);
     }
     
-    public void userSelected(UserLogin userLogin, UserService userService) throws TechnicalException, BusinessException {
+    public Historizable userSelected(long userId, UserService userService) throws TechnicalException, BusinessException {
         this.checkState();
-        logger.debug("User {} selected", userLogin);
-        UserEditResponse user = userService.findUserByLogin(userLogin.login);
+        logger.debug("User {} selected", userId);
+        UserEditResponse user = userService.findUserById(userId);
         
         if (user == null) {
-            throw new BusinessException("User with login " + userLogin.login + " does not exist");
+            logger.debug("User {} does not exist");
+            this.getModel().initUser(null);
+            return null;
+        } else {
+            this.getModel().initUser(user);
+            
+            UserId ret = new UserId();
+            ret.id = userId;
+            
+            return ret;
         }
-        
-        this.getModel().initUser(user);
     }
     
-    public Historizable userSaved(UserEditQuery userEdit, UserService userService) throws TechnicalException, BusinessException {
+    public Historizable userSaved(UserEditQuery userEdit, UserService userService) {
         this.checkState();
         logger.debug("User saved {}", userEdit.login);
         
-        UserEditResponse saved = userService.save(userEdit, this.getModel().isEditionMode());
-        this.getModel().saveUser(saved);
-        
-        UserLogin ret = new UserLogin();
-        ret.login = saved.login;
-        return ret; 
+        UserEditResponse saved;
+        try {
+            saved = userService.saveUser(userEdit, this.getModel().isEditionMode());
+            this.getModel().saveUser(saved);
+            
+            UserId ret = new UserId();
+            ret.id = saved.id;
+            return ret;
+        } catch (Exception e) {
+            logger.error("Unable to save user", e);
+            this.view.showSavingError();
+        }
+        return null;
+    }
+    
+    public void userDeleted(long id, UserService userService)  {
+        this.checkState();
+        logger.debug("User deleted {}", id);
+        try {
+            userService.deleteUser(id);
+        } catch (Exception e) {
+            logger.error("Unable to delete user", e);
+            this.view.showDeleteError();
+        }
     }
     
     private void checkState() {

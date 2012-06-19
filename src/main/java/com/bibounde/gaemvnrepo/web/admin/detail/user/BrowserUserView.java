@@ -18,6 +18,8 @@ import com.bibounde.gaemvnrepo.web.mvc.ModelEvent;
 import com.bibounde.gaemvnrepo.web.mvc.View;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Embedded;
@@ -32,6 +34,7 @@ public class BrowserUserView extends VerticalLayout implements View, PaginationL
     
     public static  final String ACTION_PAGE_CHANGED = BrowserUserView.class.getName() + ".action.page.changed";
     public static  final String ACTION_SORT_CHANGED = BrowserUserView.class.getName() + ".action.sort.changed";
+    public static  final String ACTION_USER_SELECTED = BrowserUserView.class.getName() + ".action.user.selected";
     
     private static final String TABLE_LOGIN_PROPERTY = UserSort.LOGIN.name();
     private static final String TABLE_EMAIL_PROPERTY = UserSort.EMAIL.name();
@@ -92,6 +95,16 @@ public class BrowserUserView extends VerticalLayout implements View, PaginationL
                 Messages.INSTANCE.getString("BrowserUserView.administrator", this.getLocale()),
                 Messages.INSTANCE.getString("BrowserUserView.locked", this.getLocale()),
                 Messages.INSTANCE.getString("BrowserUserView.created", this.getLocale())});
+        
+        this.table.setImmediate(true);
+        this.table.addListener(new Property.ValueChangeListener() {
+            
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                ActionEvent actionEvent = new ActionEvent(ID, ACTION_USER_SELECTED, event.getProperty().getValue());
+                controller.actionPerformed(actionEvent);
+            }
+        });
 
         this.paginationBar = new PaginationBar();
         this.paginationBar.addPaginationListener(this);

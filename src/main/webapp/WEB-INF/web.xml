@@ -92,6 +92,16 @@
         <url-pattern>/tasks/delete/file</url-pattern>
     </servlet-mapping>
     
+    <servlet>
+        <servlet-name>UserDeletionServlet</servlet-name>
+        <servlet-class>com.bibounde.gaemvnrepo.web.queue.UserDeletionServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>UserDeletionServlet</servlet-name>
+        <url-pattern>/tasks/delete/user</url-pattern>
+    </servlet-mapping>
+    
     <security-constraint>
         <web-resource-collection>
             <url-pattern>/cron/*</url-pattern>

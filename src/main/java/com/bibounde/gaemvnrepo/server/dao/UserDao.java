@@ -40,6 +40,16 @@ public interface UserDao extends Serializable {
     User findUserByLogin(String login, boolean filterActivation, PersistenceManager pm) throws TechnicalException;
     
     /**
+     * Retrieves user by id. 
+     * @param id user's id
+     * @param filterActivation if true enable activation filter
+     * @param pm persistence manager
+     * @return user object or null if no user with specified login found
+     * @throws TechnicalException
+     */
+    User findUserById(long id, boolean filterActivation, PersistenceManager pm) throws TechnicalException;
+    
+    /**
      * Retrieves users by role
      * @param role role
      * @param filterActivation if true enable activation filter

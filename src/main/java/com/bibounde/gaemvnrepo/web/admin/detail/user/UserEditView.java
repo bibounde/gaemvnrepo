@@ -6,6 +6,8 @@ import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditResponse;
 import com.bibounde.gaemvnrepo.web.admin.detail.HeaderComponent;
+import com.bibounde.gaemvnrepo.web.admin.tools.ConfirmationDialogUtil;
+import com.bibounde.gaemvnrepo.web.admin.tools.ConfirmationDialogUtil.ConfirmationDialogListener;
 import com.bibounde.gaemvnrepo.web.mvc.ActionEvent;
 import com.bibounde.gaemvnrepo.web.mvc.Controller;
 import com.bibounde.gaemvnrepo.web.mvc.Model;
@@ -17,7 +19,9 @@ import com.vaadin.data.Validator;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
@@ -25,16 +29,20 @@ import com.vaadin.ui.DefaultFieldFactory;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.Form;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.BaseTheme;
 
 public class UserEditView extends VerticalLayout implements View {
 
     public static final String ACTION_SAVED = UserEditView.class.getName() + "action.saved";
+    public static final String ACTION_DELETED = UserEditView.class.getName() + "action.deleted";
     
     public static final String ID = UserEditView.class.getName();
     
@@ -44,6 +52,9 @@ public class UserEditView extends VerticalLayout implements View {
     private UserEditProfileData userProfileFormData;
     private UsereditAuthData userAuthData;
     private NativeButton saveButton;
+    private Button deleteButton;
+    private Label statusLabel, statusIcon;
+    private HeaderComponent header;
     
     
     public UserEditView() {
@@ -86,25 +97,49 @@ public class UserEditView extends VerticalLayout implements View {
             public void buttonClick(ClickEvent event) {
                 try {
                     profileForm.commit();
-                    if (!((String) authenticationForm.getField(UsereditAuthData.PASSWORD_PROPERTY).getValue()).isEmpty()) {
+                    if (!model.isEditionMode() || !((String) authenticationForm.getField(UsereditAuthData.PASSWORD_PROPERTY).getValue()).isEmpty()) {
                         authenticationForm.commit();
                     }
+                    
+                    UserEditQuery user = new UserEditQuery();
+                    user.active = userProfileFormData.isActive();
+                    user.administrator = userProfileFormData.isAdministrator();
+                    user.email = userProfileFormData.getEmail();
+                    user.locale = userProfileFormData.getLocale();
+                    user.login = userProfileFormData.getLogin();
+                    user.password = userAuthData.getPassword();
+                    
+                    ActionEvent actionEvent = new ActionEvent(ID, ACTION_SAVED, user);
+                    controller.actionPerformed(actionEvent);
                 } catch (Exception e) {
                     // Ignored, we'll let the Form handle the errors
                 }
-                
-                UserEditQuery user = new UserEditQuery();
-                user.active = userProfileFormData.isActive();
-                user.administrator = userProfileFormData.isAdministrator();
-                user.email = userProfileFormData.getEmail();
-                user.locale = userProfileFormData.getLocale();
-                user.login = userProfileFormData.getLogin();
-                user.password = userAuthData.getPassword();
-                
-                ActionEvent actionEvent = new ActionEvent(ID, ACTION_SAVED, user);
-                controller.actionPerformed(actionEvent);
             }
         });
+        
+        this.deleteButton = new Button(Messages.INSTANCE.getString("UserEditView.delete", getLocale()));
+        this.deleteButton.setStyleName(BaseTheme.BUTTON_LINK);
+        this.deleteButton.setIcon(new ExternalResource("/static/icons/trash-16.png"));
+        this.deleteButton.addListener(new ClickListener() {
+            
+            @Override
+            public void buttonClick(ClickEvent event) {
+                ConfirmationDialogListener confirmationListener = new ConfirmationDialogListener() {
+                    @Override
+                    public void onConfirmation() {
+                        ActionEvent actionEvent = new ActionEvent(ID, ACTION_DELETED, model.getUser().id);
+                        controller.actionPerformed(actionEvent);
+                    }
+                };
+                ConfirmationDialogUtil.showConfirmationDialog(getWindow(), Messages.INSTANCE.getString("UserEditView.delete.action", getLocale()), Messages.INSTANCE.getString("UserEditView.delete.message", getLocale()), confirmationListener);
+            }
+        });
+        
+        this.statusIcon = new Label();
+        this.statusIcon.setWidth(18, UNITS_PIXELS);
+        this.statusLabel = new Label();
+        
+        this.header = new HeaderComponent("", "/static/icons/user-edit-32.png");
         
         
         this.initLayout();
@@ -113,7 +148,17 @@ public class UserEditView extends VerticalLayout implements View {
     private void initLayout() {
         this.setSizeFull();
         this.setSpacing(true);
-        this.addComponent(new HeaderComponent(Messages.INSTANCE.getString("UserEditView.title", this.getLocale()), "/static/icons/user-edit-32.png"));
+        this.addComponent(this.header);
+        
+        HorizontalLayout toolBarLayout = new HorizontalLayout();
+        toolBarLayout.setWidth(100, UNITS_PERCENTAGE);
+        this.addComponent(toolBarLayout);
+        
+        toolBarLayout.addComponent(this.statusIcon);
+        toolBarLayout.addComponent(this.statusLabel);
+        toolBarLayout.setExpandRatio(this.statusLabel, 1.0f);
+        toolBarLayout.addComponent(this.deleteButton);
+        toolBarLayout.setComponentAlignment(this.deleteButton, Alignment.MIDDLE_RIGHT);
         
         TabSheet tabSheet = new TabSheet();
         tabSheet.setSizeFull();
@@ -144,8 +189,13 @@ public class UserEditView extends VerticalLayout implements View {
     
     @Override
     public void modelChanged(ModelEvent event) {
+        this.resetStatus();
         if ((UserEditModel.USER_CHANGED.equals(event.getType()) && this.model.isEditionMode()) || UserEditModel.USER_SAVED.equals(event.getType())) {
             UserEditResponse user = this.model.getUser();
+            
+            this.deleteButton.setVisible(true);
+            
+            this.header.setTitle(Messages.INSTANCE.getString("UserEditView.title", this.getLocale()) + " \u00bb " + user.login);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ACTIVE_PROPERTY).setValue(user.active);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.EMAIL_PROPERTY).setValue(user.email);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOCALE_PROPERTY).setValue(user.locale);
@@ -159,22 +209,62 @@ public class UserEditView extends VerticalLayout implements View {
             this.authenticationForm.getItemDataSource().getItemProperty(UsereditAuthData.REPASSWORD_PROPERTY).setValue("");
             
             if (UserEditModel.USER_SAVED.equals(event.getType())) {
-                this.getWindow().showNotification(Messages.INSTANCE.getString("UserEditView.usersaved", getLocale()), null);
+                this.setStatus(true, Messages.INSTANCE.getString("UserEditView.usersaved", getLocale()));
             }
         } else {
+            
+            this.header.setTitle(Messages.INSTANCE.getString("UserEditView.title.new", this.getLocale()));
+            this.deleteButton.setVisible(false);
+            
+            this.resetStatus();
+            
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ACTIVE_PROPERTY).setValue(false);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.EMAIL_PROPERTY).setValue("");
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOCALE_PROPERTY).setValue(null);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ADMINISTRATOR_PROPERTY).setValue(false);
             
             Property loginProperty = this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOGIN_PROPERTY);
-            loginProperty.setValue("");
             loginProperty.setReadOnly(false);
+            loginProperty.setValue("");
             
-
             this.authenticationForm.getItemDataSource().getItemProperty(UsereditAuthData.PASSWORD_PROPERTY).setValue("");
             this.authenticationForm.getItemDataSource().getItemProperty(UsereditAuthData.REPASSWORD_PROPERTY).setValue("");
         }
+    }
+    
+    private void setStatus(boolean success, String message) {
+        if (success) {
+            this.statusIcon.setIcon(new ExternalResource("/static/icons/accept-16.png"));
+            this.statusLabel.addStyleName("gaemvnrepo-notification-success");
+
+        } else {
+            this.statusIcon.setIcon(new ExternalResource("/static/icons/error-16.png"));
+            this.statusLabel.addStyleName("gaemvnrepo-notification-error");
+        }
+        this.statusLabel.setValue(message);
+        this.statusIcon.setVisible(true);
+        this.statusLabel.setVisible(true);
+    }
+    
+    private void resetStatus() {
+        this.statusIcon.setVisible(false);
+        this.statusLabel.setVisible(false);
+        this.statusLabel.removeStyleName("gaemvnrepo-notification-error");
+        this.statusLabel.removeStyleName("gaemvnrepo-notification-success");
+    }
+    
+    /**
+     * Show saving error in detail view
+     */
+    public void showSavingError() {
+        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.save.error", this.getLocale()));
+    }
+    
+    /**
+     * Show deletion error in detail view
+     */
+    public void showDeleteError() {
+        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.delete.error", this.getLocale()));
     }
     
 

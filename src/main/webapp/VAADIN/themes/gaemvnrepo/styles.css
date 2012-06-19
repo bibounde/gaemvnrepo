@@ -50,3 +50,11 @@
 .gaemvnrepo-form-input {
     width : 80%;
 }
+
+.gaemvnrepo-notification-success {
+    color : green;
+}
+
+.gaemvnrepo-notification-error {
+    color : red;
+}

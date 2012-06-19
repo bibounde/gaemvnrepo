@@ -20,7 +20,7 @@ import com.bibounde.gaemvnrepo.shared.domain.Role;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;
-import com.bibounde.gaemvnrepo.shared.domain.user.UserLogin;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserId;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.history.Historizable;
@@ -60,7 +60,7 @@ public class AdminApplication extends Application implements Controller, History
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(AdminApplication.class);
 
-    private static final int DEFAULT_DETAIL_VIEW_SELECTED_INDEX = 5;
+    private static final int DEFAULT_DETAIL_VIEW_SELECTED_INDEX = 4;
     private Map<String, View> viewMap = new HashMap<String, View>();
     private List<String> detailViewIds = new ArrayList<String>();
     private int currentDetailViewIndex = -1;
@@ -222,16 +222,12 @@ public class AdminApplication extends Application implements Controller, History
                     int index = (Integer) actionParams[0];
                     View detailView = this.changeDetailView(index);
 
-                    //Disable history for "New User"
-                    if (!UserEditView.ID.equals(detailView.getId())) {
-                        history = new History();
-                        history.setAction(HistoryAction.ACTION_SHOW_DETAIL_VIEW);
-                        history.setViewId(detailView.getId());
-                        Map<String, String> params = new HashMap<String, String>();
-                        params.put(HistoryAction.KEY_INDEX, String.valueOf(index));
-                        history.setParams(params);
-                    }
-                    
+                    history = new History();
+                    history.setAction(HistoryAction.ACTION_SHOW_DETAIL_VIEW);
+                    history.setViewId(detailView.getId());
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put(HistoryAction.KEY_INDEX, String.valueOf(index));
+                    history.setParams(params);
 
                     if (BrowserUserView.ID.equals(detailView.getId())) {
                         this.browserViewHelper.initView();
@@ -240,27 +236,38 @@ public class AdminApplication extends Application implements Controller, History
                     } 
                 }
             } else if (BrowserUserView.ID.equals(viewId)) {
-                Historizable historyItem = null;
                 if (BrowserUserView.ACTION_PAGE_CHANGED.equals(action)) {
                     int page = (Integer) actionParams[0];
                     logger.debug("Page {} of {} selected", page, BrowserUserView.ID);
                     
-                    historyItem = this.browserViewHelper.pageChanged(page, this.userService);
+                    Historizable historyItem = this.browserViewHelper.pageChanged(page, this.userService);
+                    history = new History();
+                    history.setAction(HistoryAction.ACTION_CHANGE_USER_BROWSER_INFO);
+                    history.setViewId(BrowserUserView.ID);
+                    history.setParams(historyItem.encode());
+                    
                 } else if (BrowserUserView.ACTION_SORT_CHANGED.equals(action)) {
                     String column = (String) actionParams[0];
                     boolean ascending = (Boolean) actionParams[1];
                     logger.debug("Sort action selected on column {} (ascending : {}) for {}", new Object[]{column, ascending, BrowserUserView.ID});
                     
-                    historyItem = this.browserViewHelper.sortChanged(column, ascending, this.userService);
-                } else {
-                    logger.warn("{} action is not supported for {}", action, BrowserUserView.ID);
-                }
-                
-                if (historyItem != null) {
+                    Historizable historyItem = this.browserViewHelper.sortChanged(column, ascending, this.userService);
                     history = new History();
                     history.setAction(HistoryAction.ACTION_CHANGE_USER_BROWSER_INFO);
                     history.setViewId(BrowserUserView.ID);
                     history.setParams(historyItem.encode());
+                } else if (BrowserUserView.ACTION_USER_SELECTED.equals(action)) {
+                    //Changes view
+                    this.changeDetailView(this.getDetailViewIndex(UserEditView.ID));
+                    long id = (Long) actionParams[0];
+                    logger.debug("User {} selected for {}", id, BrowserUserView.ID);
+                    Historizable historyItem = this.userEditViewHelper.userSelected(id, this.userService);
+                    history = new History();
+                    history.setAction(HistoryAction.ACTION_SELECT_USER);
+                    history.setViewId(UserEditView.ID);
+                    history.setParams(historyItem.encode());
+                } else {
+                    logger.warn("{} action is not supported for {}", action, BrowserUserView.ID);
                 }
             } else if (UserEditView.ID.equals(viewId)) {
                 Historizable historyItem = null;
@@ -268,6 +275,13 @@ public class AdminApplication extends Application implements Controller, History
                     UserEditQuery user = (UserEditQuery) actionParams[0];
                     logger.debug("User {} saved", user.login);
                     historyItem = this.userEditViewHelper.userSaved(user, this.userService);
+                } else if (UserEditView.ACTION_DELETED.equals(action)) {
+                    long id = (Long) actionParams[0];
+                    logger.debug("User {} deleted", id);
+                    this.userEditViewHelper.userDeleted(id, this.userService);
+                    
+                    //Go to Browser view
+                    this.performAction(NavigationMenu.ID, NavigationMenu.ACTION_SELECTION, new Object[]{this.getDetailViewIndex(BrowserUserView.ID)}, true);
                 } else {
                     logger.warn("{} action is not supported for {}", action, UserEditView.ID);
                 }
@@ -296,6 +310,9 @@ public class AdminApplication extends Application implements Controller, History
      */
     private void performHistoryAction(History history) {
         logger.debug("Performs history action {}", history.getAction());
+        if (history.getAction().equals(HistoryAction.NO_ACTION)) {
+            //
+        }
         try {
             // Actions are linked with view. Need to change view if this one is
             // not displayed
@@ -310,6 +327,10 @@ public class AdminApplication extends Application implements Controller, History
                 // Not necessary to change view with index. Already done.
                 if (BrowserUserView.ID.equals(history.getViewId())){
                     this.browserViewHelper.initView();
+                } else if (UserEditView.ID.equals(history.getViewId())){
+                    this.userEditViewHelper.initView();
+                } else {
+                    logger.debug("No specific history action for {}", history.getViewId());
                 }
             } else if (HistoryAction.ACTION_CHANGE_USER_BROWSER_INFO.equals(history.getAction())) {
                // Not necessary to change view with index. Already done.
@@ -318,9 +339,9 @@ public class AdminApplication extends Application implements Controller, History
                this.browserViewHelper.refreshInfo(query, this.userService);
             } else if (HistoryAction.ACTION_SELECT_USER.equals(history.getAction())) {
                 // Not necessary to change view with index. Already done.
-                UserLogin userLogin = new UserLogin();
-                userLogin.load(history.getParams());
-                this.userEditViewHelper.userSelected(userLogin, this.userService);
+                UserId userId = new UserId();
+                userId.load(history.getParams());
+                this.userEditViewHelper.userSelected(userId.id, this.userService);
              } else {
                 logger.warn("Action {} is not supported in history", history.getAction());
             }

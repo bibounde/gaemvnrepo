@@ -40,6 +40,14 @@ public interface UserService extends Serializable {
     UserEditResponse findUserByLogin(String login) throws TechnicalException;
     
     /**
+     * Retrieves user by id
+     * @param id user's id
+     * @return user object or null if no user with specified id found
+     * @throws TechnicalException
+     */
+    UserEditResponse findUserById(long login) throws TechnicalException;
+    
+    /**
      * Create user admin
      * @throws TechnicalException
      */
@@ -80,5 +88,14 @@ public interface UserService extends Serializable {
      * @throws BusinessException
      */
     @PreAuthorize("hasAnyRole('admin', 'manager')")
-    UserEditResponse save(UserEditQuery userToSave, boolean edition) throws TechnicalException, BusinessException;
+    UserEditResponse saveUser(UserEditQuery userToSave, boolean edition) throws TechnicalException, BusinessException;
+    
+    /**
+     * Deletes user 
+     * @param id user's id
+     * @throws TechnicalException
+     * @throws BusinessException
+     */
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    void deleteUser(long id) throws TechnicalException, BusinessException;
 }
