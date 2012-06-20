@@ -249,25 +249,18 @@ public class UserServiceImpl implements UserService {
                 user.setLogin(userToSave.login);
             }
             
-            user.setActive(userToSave.active);
+            user.setActive(true);
             user.setEmail(userToSave.email);
             user.setLocale(userToSave.locale);
-            user.setRole(userToSave.administrator ? Role.ADMIN:Role.USER);
+            user.setRole(Role.valueOf(userToSave.role.name()));
             
             if (userToSave.password != null && !userToSave.password.isEmpty()) {
                 user.setPassword(new Md5PasswordEncoder().encodePassword(userToSave.password, null));
             }
             
-            userDao.saveOrUpdate(user, pm);
+            User savedUser = userDao.saveOrUpdate(user, pm);
             
-            UserEditResponse ret = new UserEditResponse();
-            ret.id = user.getId();
-            ret.active = user.isActive();
-            ret.administrator = user.getRole() == Role.ADMIN;
-            ret.email = user.getEmail();
-            ret.locale = user.getLocale();
-            ret.login = user.getLogin();
-            
+            UserEditResponse ret = this.createUserEditResponse(savedUser);
             tx.commit();
         
             return ret;
@@ -326,11 +319,11 @@ public class UserServiceImpl implements UserService {
     private UserEditResponse createUserEditResponse(User user) {
         UserEditResponse ret = new UserEditResponse();
         ret.id = user.getId();
-        ret.active = user.isActive();
-        ret.administrator = user.getRole() == Role.ADMIN;
+        ret.role = com.bibounde.gaemvnrepo.shared.domain.Role.valueOf(user.getRole().name());
         ret.email = user.getEmail();
         ret.locale = user.getLocale();
         ret.login = user.getLogin();
+        ret.active = user.isActive();
         
         return ret;
     }
@@ -354,6 +347,41 @@ public class UserServiceImpl implements UserService {
                     throw new BusinessException("Unable to delete authenticated user");
                 }
                 this.userDao.delete(toDelete, pm);
+            }
+            
+            tx.commit();
+        
+        } catch (TechnicalException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to persist", e);
+        } finally {
+            if (tx != null && tx.isActive()) {
+                    tx.rollback();
+            }
+            pm.close();
+        }
+    }
+
+    @Override
+    public void setActiveUser(long id, boolean active) throws TechnicalException, BusinessException {
+        PersistenceManager pm = null;
+        Transaction tx = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+            tx = pm.currentTransaction();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            tx.begin();
+            User toChange = this.userDao.findUserById(id, false, pm);
+            if (toChange != null) {
+                if (toChange.getLogin().equals(SecurityContextHolder.getContext().getAuthentication().getName())) {
+                    throw new BusinessException("Unable to lock authenticated user");
+                }
+                toChange.setActive(active);
             }
             
             tx.commit();

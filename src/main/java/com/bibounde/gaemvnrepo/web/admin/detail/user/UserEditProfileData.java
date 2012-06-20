@@ -2,17 +2,19 @@ package com.bibounde.gaemvnrepo.web.admin.detail.user;
 
 import java.io.Serializable;
 
+import com.bibounde.gaemvnrepo.shared.domain.Role;
+
 public class UserEditProfileData implements Serializable {
 
     public static final String LOGIN_PROPERTY = "login";
     public static final String EMAIL_PROPERTY = "email";
     public static final String LOCALE_PROPERTY = "locale";
-    public static final String ACTIVE_PROPERTY = "active";
-    public static final String ADMINISTRATOR_PROPERTY = "administrator";
+    public static final String ROLE_PROPERTY = "role";
     
     
     private String login = "", email = "", locale;
-    private boolean active, administrator;
+    private Role role;
+    
     /**
      * @return the login
      */
@@ -50,28 +52,15 @@ public class UserEditProfileData implements Serializable {
         this.locale = locale;
     }
     /**
-     * @return the active
+     * @return the role
      */
-    public boolean isActive() {
-        return active;
+    public Role getRole() {
+        return role;
     }
     /**
-     * @param active the active to set
+     * @param role the role to set
      */
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setRole(Role role) {
+        this.role = role;
     }
-    /**
-     * @return the administrator
-     */
-    public boolean isAdministrator() {
-        return administrator;
-    }
-    /**
-     * @param administrator the administrator to set
-     */
-    public void setAdministrator(boolean administrator) {
-        this.administrator = administrator;
-    }
-    
 }

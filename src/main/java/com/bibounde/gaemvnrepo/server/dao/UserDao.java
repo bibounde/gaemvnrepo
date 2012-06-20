@@ -15,9 +15,10 @@ public interface UserDao extends Serializable {
      * Save or update a user
      * @param user user to create
      * @param pm persistence manager
+     * @return saved user
      * @throws TechnicalException
      */
-    void saveOrUpdate(User user, PersistenceManager pm) throws TechnicalException;
+    User saveOrUpdate(User user, PersistenceManager pm) throws TechnicalException;
     
     /**
      * Retrieves user by email. 

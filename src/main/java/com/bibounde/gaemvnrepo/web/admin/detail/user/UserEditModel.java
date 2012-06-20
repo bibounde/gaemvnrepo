@@ -12,6 +12,7 @@ public class UserEditModel implements Model{
 
     public static final String USER_SAVED = UserEditModel.class.getName() + ".event.usersaved";
     public static final String USER_CHANGED = UserEditModel.class.getName() + ".event.userchanged";
+    public static final String USER_ACTIVATION_CHANGED = UserEditModel.class.getName() + ".event.useractivationchanged";
     
     private List<ModelEventListener> listeners = new ArrayList<ModelEventListener>();
     
@@ -46,6 +47,14 @@ public class UserEditModel implements Model{
         this.user = user;
         this.editionMode = true;
         ModelEvent event = new ModelEvent(USER_SAVED);
+        for (ModelEventListener listener : this.listeners) {
+            listener.modelChanged(event);
+        }
+    }
+    
+    public void activeUser(boolean active) {
+        this.user.active = active;
+        ModelEvent event = new ModelEvent(USER_ACTIVATION_CHANGED);
         for (ModelEventListener listener : this.listeners) {
             listener.modelChanged(event);
         }

@@ -1,7 +1,6 @@
 package com.bibounde.gaemvnrepo.shared.service;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -98,4 +97,14 @@ public interface UserService extends Serializable {
      */
     @PreAuthorize("hasAnyRole('admin', 'manager')")
     void deleteUser(long id) throws TechnicalException, BusinessException;
+    
+    /**
+     * Set activation status of specified user 
+     * @param id user's id
+     * @param active true means active
+     * @throws TechnicalException
+     * @throws BusinessException
+     */
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    void setActiveUser(long id, boolean active) throws TechnicalException, BusinessException;
 }

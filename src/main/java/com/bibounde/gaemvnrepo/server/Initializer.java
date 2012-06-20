@@ -40,14 +40,14 @@ public class Initializer {
                 
                 logger.info("Creates test users");
                 Random rd = new Random();
-                for (int i = 0; i < 55; i++) {
+                for (int i = 0; i < 26; i++) {
                     User user = new User();
                     user.setActive(rd.nextBoolean());
                     user.setEmail("email-" + user.hashCode() + "@gmail.com");
-                    user.setLocale(Locale.ENGLISH.getLanguage() + "_" + Locale.ENGLISH.getCountry());
+                    user.setLocale("en_GB");
                     user.setLogin("login" + user.hashCode());
                     user.setPassword("fe01ce2a7fbac8fafaed7c982a04e229");
-                    user.setRole(rd.nextBoolean() ? Role.MANAGER : Role.UPLOADER);
+                    user.setRole(rd.nextBoolean() ? Role.USER : Role.UPLOADER);
                     
                     userService.createUser(user);
                 }

@@ -1,7 +1,6 @@
 package com.bibounde.gaemvnrepo.web.admin;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,17 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.domain.Role;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
-import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserId;
+import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.history.Historizable;
@@ -28,7 +24,6 @@ import com.bibounde.gaemvnrepo.shared.service.UserService;
 import com.bibounde.gaemvnrepo.web.admin.detail.home.HomeView;
 import com.bibounde.gaemvnrepo.web.admin.detail.profile.ProfileView;
 import com.bibounde.gaemvnrepo.web.admin.detail.repository.BrowseRepositoryView;
-import com.bibounde.gaemvnrepo.web.admin.detail.repository.RepositoryEditView;
 import com.bibounde.gaemvnrepo.web.admin.detail.system.SystemConfigurationView;
 import com.bibounde.gaemvnrepo.web.admin.detail.user.BrowserUserView;
 import com.bibounde.gaemvnrepo.web.admin.detail.user.BrowserUserViewHelper;
@@ -152,9 +147,6 @@ public class AdminApplication extends Application implements Controller, History
         this.detailViewIds.add(BrowseRepositoryView.ID);
 
         if (info.role == Role.ADMIN) {
-            menuItems.add(MenuItem.REPOSITORY_EDIT_ITEM);
-            this.detailViewIds.add(RepositoryEditView.ID);
-
             menuItems.add(MenuItem.SYSTEM_CONFIGURATION_ITEM);
             this.detailViewIds.add(SystemConfigurationView.ID);
 
@@ -165,8 +157,6 @@ public class AdminApplication extends Application implements Controller, History
             this.detailViewIds.add(UserEditView.ID);
 
         } else if (info.role == Role.MANAGER) {
-            menuItems.add(MenuItem.REPOSITORY_EDIT_ITEM);
-            this.detailViewIds.add(RepositoryEditView.ID);
 
             menuItems.add(MenuItem.BROWSE_USER_ITEM);
             this.detailViewIds.add(BrowserUserView.ID);
@@ -180,19 +170,6 @@ public class AdminApplication extends Application implements Controller, History
 
         logger.debug("Status bar and nvigation menu initialized. Display home");
         this.displayHome();
-    }
-
-    public boolean hasAnyRole(String... roles) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Collection<GrantedAuthority> authorities = authentication.getAuthorities();
-        for (GrantedAuthority authority : authorities) {
-            for (String role : roles) {
-                if (role.equals(authority.getAuthority())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public void setWebApplicationContext(WebApplicationContext appContext) {
@@ -278,10 +255,16 @@ public class AdminApplication extends Application implements Controller, History
                 } else if (UserEditView.ACTION_DELETED.equals(action)) {
                     long id = (Long) actionParams[0];
                     logger.debug("User {} deleted", id);
-                    this.userEditViewHelper.userDeleted(id, this.userService);
+                    if (this.userEditViewHelper.userDeleted(id, this.userService)) {
+                        //Go to Browser view
+                        this.performAction(NavigationMenu.ID, NavigationMenu.ACTION_SELECTION, new Object[]{this.getDetailViewIndex(BrowserUserView.ID)}, true);
+                    }
+                } else if (UserEditView.ACTION_ACTIVATION.equals(action)) {
+                    long id = (Long) actionParams[0];
+                    logger.debug("User {} activation need to change", id);
+                    //No history
+                    this.userEditViewHelper.userActivationChanged(id, this.userService);
                     
-                    //Go to Browser view
-                    this.performAction(NavigationMenu.ID, NavigationMenu.ACTION_SELECTION, new Object[]{this.getDetailViewIndex(BrowserUserView.ID)}, true);
                 } else {
                     logger.warn("{} action is not supported for {}", action, UserEditView.ID);
                 }
@@ -375,8 +358,6 @@ public class AdminApplication extends Application implements Controller, History
                 view = new HomeView();
             } else if (BrowseRepositoryView.ID.equals(newViewId)) {
                 view = new BrowseRepositoryView();
-            } else if (RepositoryEditView.ID.equals(newViewId)) {
-                view = new RepositoryEditView();
             } else if (SystemConfigurationView.ID.equals(newViewId)) {
                 view = new SystemConfigurationView();
             } else if (BrowserUserView.ID.equals(newViewId)) {

@@ -3,6 +3,7 @@ package com.bibounde.gaemvnrepo.web.admin.detail.user;
 import java.util.Arrays;
 
 import com.bibounde.gaemvnrepo.i18n.Messages;
+import com.bibounde.gaemvnrepo.shared.domain.Role;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditResponse;
 import com.bibounde.gaemvnrepo.web.admin.detail.HeaderComponent;
@@ -43,6 +44,7 @@ public class UserEditView extends VerticalLayout implements View {
 
     public static final String ACTION_SAVED = UserEditView.class.getName() + "action.saved";
     public static final String ACTION_DELETED = UserEditView.class.getName() + "action.deleted";
+    public static final String ACTION_ACTIVATION = UserEditView.class.getName() + "action.activation";
     
     public static final String ID = UserEditView.class.getName();
     
@@ -52,7 +54,7 @@ public class UserEditView extends VerticalLayout implements View {
     private UserEditProfileData userProfileFormData;
     private UsereditAuthData userAuthData;
     private NativeButton saveButton;
-    private Button deleteButton;
+    private Button deleteButton, activationButton;
     private Label statusLabel, statusIcon;
     private HeaderComponent header;
     
@@ -70,12 +72,11 @@ public class UserEditView extends VerticalLayout implements View {
         this.profileForm.setInvalidCommitted(false);
         
         this.profileForm.setVisibleItemProperties(Arrays.asList(new String[] {
-                UserEditProfileData.LOGIN_PROPERTY, UserEditProfileData.EMAIL_PROPERTY, UserEditProfileData.LOCALE_PROPERTY, UserEditProfileData.ACTIVE_PROPERTY, UserEditProfileData.ADMINISTRATOR_PROPERTY}));
+                UserEditProfileData.LOGIN_PROPERTY, UserEditProfileData.EMAIL_PROPERTY, UserEditProfileData.LOCALE_PROPERTY, UserEditProfileData.ROLE_PROPERTY,}));
         this.profileForm.getField(UserEditProfileData.LOGIN_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.login", this.getLocale()));
         this.profileForm.getField(UserEditProfileData.EMAIL_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.email", this.getLocale()));
         this.profileForm.getField(UserEditProfileData.LOCALE_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.lang", this.getLocale()));
-        this.profileForm.getField(UserEditProfileData.ACTIVE_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.active", this.getLocale()));
-        this.profileForm.getField(UserEditProfileData.ADMINISTRATOR_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.administrator", this.getLocale()));
+        this.profileForm.getField(UserEditProfileData.ROLE_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.role", this.getLocale()));
         
         this.authenticationForm = new Form();
         this.authenticationForm.setCaption(Messages.INSTANCE.getString("UserEditView.authentication", this.getLocale()));
@@ -102,12 +103,12 @@ public class UserEditView extends VerticalLayout implements View {
                     }
                     
                     UserEditQuery user = new UserEditQuery();
-                    user.active = userProfileFormData.isActive();
-                    user.administrator = userProfileFormData.isAdministrator();
                     user.email = userProfileFormData.getEmail();
                     user.locale = userProfileFormData.getLocale();
+                    user.role = userProfileFormData.getRole();
                     user.login = userProfileFormData.getLogin();
                     user.password = userAuthData.getPassword();
+                    
                     
                     ActionEvent actionEvent = new ActionEvent(ID, ACTION_SAVED, user);
                     controller.actionPerformed(actionEvent);
@@ -135,8 +136,19 @@ public class UserEditView extends VerticalLayout implements View {
             }
         });
         
+        this.activationButton = new Button();
+        this.activationButton.setStyleName(BaseTheme.BUTTON_LINK);
+        this.activationButton.addListener(new ClickListener() {
+            
+            @Override
+            public void buttonClick(ClickEvent event) {
+                ActionEvent actionEvent = new ActionEvent(ID, ACTION_ACTIVATION, model.getUser().id);
+                controller.actionPerformed(actionEvent);
+            }
+        });
+        
         this.statusIcon = new Label();
-        this.statusIcon.setWidth(18, UNITS_PIXELS);
+        this.statusIcon.setWidth(16, UNITS_PIXELS);
         this.statusLabel = new Label();
         
         this.header = new HeaderComponent("", "/static/icons/user-edit-32.png");
@@ -152,56 +164,66 @@ public class UserEditView extends VerticalLayout implements View {
         
         HorizontalLayout toolBarLayout = new HorizontalLayout();
         toolBarLayout.setWidth(100, UNITS_PERCENTAGE);
+        toolBarLayout.setSpacing(true);
         this.addComponent(toolBarLayout);
         
         toolBarLayout.addComponent(this.statusIcon);
         toolBarLayout.addComponent(this.statusLabel);
         toolBarLayout.setExpandRatio(this.statusLabel, 1.0f);
+        toolBarLayout.addComponent(this.activationButton);
+        toolBarLayout.setComponentAlignment(this.activationButton, Alignment.MIDDLE_RIGHT);
         toolBarLayout.addComponent(this.deleteButton);
         toolBarLayout.setComponentAlignment(this.deleteButton, Alignment.MIDDLE_RIGHT);
         
-        TabSheet tabSheet = new TabSheet();
-        tabSheet.setSizeFull();
-        this.addComponent(tabSheet);
-        this.setExpandRatio(tabSheet, 1.0f);
-        
         GridLayout detailTabLayout = new GridLayout(2, 2);
-        detailTabLayout.setMargin(true);
+        //detailTabLayout.setMargin(new MarginInfo(false, true, true, false));
         detailTabLayout.setSpacing(true);
         detailTabLayout.setSizeFull();
-        tabSheet.addTab(detailTabLayout, Messages.INSTANCE.getString("UserEditView.details", this.getLocale()));
+        this.addComponent(detailTabLayout);
+        this.setExpandRatio(detailTabLayout, 1.0f);
         
-        this.profileForm.setSizeFull();
-        this.profileForm.addStyleName("gaemvnrepo-form");
+        this.profileForm.setWidth(100, UNITS_PERCENTAGE);
+        this.profileForm.getLayout().addStyleName("gaemvnrepo-form");
+        //this.profileForm.addStyleName("gaemvnrepo-form");
         this.profileForm.getLayout().setMargin(true);
         detailTabLayout.addComponent(this.profileForm, 0, 0);
         
-        this.authenticationForm.setSizeFull();
-        this.authenticationForm.addStyleName("gaemvnrepo-form");
+        this.authenticationForm.setWidth(100, UNITS_PERCENTAGE);
+        this.authenticationForm.getLayout().addStyleName("gaemvnrepo-form");
+        //this.authenticationForm.addStyleName("gaemvnrepo-form");
         this.authenticationForm.getLayout().setMargin(true);
         detailTabLayout.addComponent(this.authenticationForm, 1, 0);
-        detailTabLayout.setRowExpandRatio(0, 0.7f);
+        //detailTabLayout.setRowExpandRatio(0, 0.7f);
         
         detailTabLayout.addComponent(this.saveButton, 1, 1);
         detailTabLayout.setComponentAlignment(this.saveButton, Alignment.TOP_RIGHT);
-        detailTabLayout.setRowExpandRatio(1, 0.3f);
+        detailTabLayout.setRowExpandRatio(1, 1.0f);
     }
     
     @Override
     public void modelChanged(ModelEvent event) {
         this.resetStatus();
-        if ((UserEditModel.USER_CHANGED.equals(event.getType()) && this.model.isEditionMode()) || UserEditModel.USER_SAVED.equals(event.getType())) {
+        if ((UserEditModel.USER_CHANGED.equals(event.getType()) && this.model.isEditionMode()) || UserEditModel.USER_ACTIVATION_CHANGED.equals(event.getType()) || UserEditModel.USER_SAVED.equals(event.getType())) {
             UserEditResponse user = this.model.getUser();
             
             this.deleteButton.setVisible(true);
+            this.activationButton.setVisible(true);
+            
+            if (this.model.getUser().active) {
+                this.activationButton.setCaption(Messages.INSTANCE.getString("UserEditView.lock", getLocale()));
+                this.activationButton.setIcon(new ExternalResource("/static/icons/locked-16.png"));
+            } else {
+                this.activationButton.setCaption(Messages.INSTANCE.getString("UserEditView.unlock", getLocale()));
+                this.activationButton.setIcon(new ExternalResource("/static/icons/unlocked-16.png"));
+            }
             
             this.header.setTitle(Messages.INSTANCE.getString("UserEditView.title", this.getLocale()) + " \u00bb " + user.login);
-            this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ACTIVE_PROPERTY).setValue(user.active);
+            this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ROLE_PROPERTY).setValue(user.role);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.EMAIL_PROPERTY).setValue(user.email);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOCALE_PROPERTY).setValue(user.locale);
-            this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ADMINISTRATOR_PROPERTY).setValue(user.administrator);
             
             Property loginProperty = this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOGIN_PROPERTY);
+            loginProperty.setReadOnly(false);
             loginProperty.setValue(user.login);
             loginProperty.setReadOnly(true);
             
@@ -215,13 +237,13 @@ public class UserEditView extends VerticalLayout implements View {
             
             this.header.setTitle(Messages.INSTANCE.getString("UserEditView.title.new", this.getLocale()));
             this.deleteButton.setVisible(false);
+            this.activationButton.setVisible(false);
             
             this.resetStatus();
             
-            this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ACTIVE_PROPERTY).setValue(false);
+            this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ROLE_PROPERTY).setValue(null);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.EMAIL_PROPERTY).setValue("");
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOCALE_PROPERTY).setValue(null);
-            this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ADMINISTRATOR_PROPERTY).setValue(false);
             
             Property loginProperty = this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOGIN_PROPERTY);
             loginProperty.setReadOnly(false);
@@ -267,6 +289,19 @@ public class UserEditView extends VerticalLayout implements View {
         this.setStatus(false, Messages.INSTANCE.getString("UserEditView.delete.error", this.getLocale()));
     }
     
+    /**
+     * Show lock error in detail view
+     */
+    public void showLockError() {
+        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.lock.error", this.getLocale()));
+    }
+    
+    /**
+     * Show unlock error in detail view
+     */
+    public void showUnlockError() {
+        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.lock.error", this.getLocale()));
+    }
 
     @Override
     public Model getModel() {
@@ -285,7 +320,7 @@ public class UserEditView extends VerticalLayout implements View {
     
     private class ProfileFieldFactory extends DefaultFieldFactory {
         
-        private final NativeSelect localeSelect;
+        private final NativeSelect localeSelect, roleSelect;
         
         public ProfileFieldFactory() {
             this.localeSelect = new NativeSelect();
@@ -295,6 +330,19 @@ public class UserEditView extends VerticalLayout implements View {
             for (String lang : Messages.INSTANCE.getSupportedLanguages()) {
                 this.localeSelect.addItem(lang);
             }
+            this.roleSelect = new NativeSelect();
+            this.roleSelect.addStyleName("gaemvnrepo-form-input");
+            this.roleSelect.setRequired(true);
+            this.roleSelect.setRequiredError(Messages.INSTANCE.getString("UserEditView.required.role", getLocale()));
+            
+            this.roleSelect.addItem(Role.USER);
+            this.roleSelect.setItemCaption(Role.USER, Messages.INSTANCE.getString("UserEditView.role.user", getLocale()));
+            this.roleSelect.addItem(Role.UPLOADER);
+            this.roleSelect.setItemCaption(Role.UPLOADER, Messages.INSTANCE.getString("UserEditView.role.uploader", getLocale()));
+            this.roleSelect.addItem(Role.MANAGER);
+            this.roleSelect.setItemCaption(Role.MANAGER, Messages.INSTANCE.getString("UserEditView.role.manager", getLocale()));
+            this.roleSelect.addItem(Role.ADMIN);
+            this.roleSelect.setItemCaption(Role.ADMIN, Messages.INSTANCE.getString("UserEditView.role.administrator", getLocale()));
         }
         
         @Override
@@ -302,6 +350,8 @@ public class UserEditView extends VerticalLayout implements View {
             Field f;
             if (UserEditProfileData.LOCALE_PROPERTY.equals(propertyId)) {
                 return this.localeSelect;
+            } else if (UserEditProfileData.ROLE_PROPERTY.equals(propertyId)) {
+                return this.roleSelect;
             } else {
                 // Use the super class to create a suitable field base on the
                 // property type.

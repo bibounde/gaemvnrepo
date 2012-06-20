@@ -16,7 +16,7 @@ import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 public class UserDaoImpl implements UserDao {
 
     @Override
-    public void saveOrUpdate(User user, PersistenceManager pm) throws TechnicalException {
+    public User saveOrUpdate(User user, PersistenceManager pm) throws TechnicalException {
         try {
             if (user.getLogin() == null || user.getLogin().length() < 4 || user.getLogin().length() > 25) {
                 throw new IllegalArgumentException("User login is invalid. Login length must be between 3 and 25");
@@ -26,7 +26,7 @@ public class UserDaoImpl implements UserDao {
             this.checkUniqueContstaint("email", user.getEmail(), pm);
 
             user.setCreated(System.currentTimeMillis());
-            pm.makePersistent(user);
+            return pm.makePersistent(user);
         } catch (Exception e) {
             throw new TechnicalException("Unable to create user db", e);
         }

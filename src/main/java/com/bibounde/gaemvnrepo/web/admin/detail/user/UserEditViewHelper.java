@@ -73,14 +73,39 @@ public class UserEditViewHelper implements Serializable {
         return null;
     }
     
-    public void userDeleted(long id, UserService userService)  {
+    /**
+     * Performs delete
+     * @param id user id
+     * @param userService user service
+     * @return true for successful delete
+     */
+    public boolean userDeleted(long id, UserService userService)  {
         this.checkState();
         logger.debug("User deleted {}", id);
         try {
             userService.deleteUser(id);
+            return true;
         } catch (Exception e) {
             logger.error("Unable to delete user", e);
             this.view.showDeleteError();
+            return false;
+        }
+    }
+    
+    public void userActivationChanged(long id, UserService userService) {
+        this.checkState();
+        boolean newActiveStatus = !this.getModel().getUser().active;
+        logger.debug("User {} must be {}", id, newActiveStatus ? "unlocked" : "locked");
+        try {
+            userService.setActiveUser(id, newActiveStatus);
+            this.getModel().activeUser(newActiveStatus);
+        } catch (Exception e) {
+            logger.error("Unable to delete user", e);
+            if (newActiveStatus) {
+                this.view.showUnlockError();
+            } else {
+                this.view.showLockError();
+            }
         }
     }
     
