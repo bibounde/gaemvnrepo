@@ -266,7 +266,7 @@
 				<artifactId>maven-gae-plugin</artifactId>
 				<version>0.9.0</version>
 				<configuration>
-				    <serverId>appengine.google.com</serverId>
+					<serverId>appengine.google.com</serverId>
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -299,13 +299,23 @@
 
 		</plugins>
 	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>2.5</version>
+			</plugin>
+		</plugins>
+	</reporting>
 
 	<properties>
-        <!-- This is just for "eclipse:eclipse" goal to always attempt downloading sources -->
-        <downloadSources>true</downloadSources>
+		<!-- This is just for "eclipse:eclipse" goal to always attempt downloading 
+			sources -->
+		<downloadSources>true</downloadSources>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gae.version>1.6.5</gae.version>
-		
+
 		<datanucleus.version>1.1.5</datanucleus.version>
 
 		<!-- Vaadin -->
@@ -317,13 +327,13 @@
 		<spring-security.version>3.0.5.RELEASE</spring-security.version>
 		<spring-aspects.version>3.0.5.RELEASE</spring-aspects.version>
 		<spring-aop.version>3.0.5.RELEASE</spring-aop.version>
-		
+
 		<!-- Integration -->
 		<gae.application.name>gaemvnrepo</gae.application.name>
 		<gae.application.version>1</gae.application.version>
 		<gae.application.build></gae.application.build>
-        <env.mode>PRODUCTION</env.mode>
-		
+		<env.mode>PRODUCTION</env.mode>
+
 	</properties>
 
 	<profiles>
@@ -356,24 +366,24 @@
 				<gae.application.version>release</gae.application.version>
 			</properties>
 		</profile>
-        <profile>
-            <id>jenkins</id>
-            <properties>
-                <env.mode>DEV</env.mode>
-                <gae.application.version>test</gae.application.version>
-                <gae.application.name>gaemvnreponightlybuild</gae.application.name>
-                <gae.application.build>${BUILD_ID}</gae.application.build>
-            </properties>
-        </profile>
-        <profile>
-            <id>dev</id>
-            <properties>
-                <env.mode>DEV</env.mode>
-                <gae.application.version>test</gae.application.version>
-                <gae.application.name>local</gae.application.name>
-                <gae.application.build>${user.name}</gae.application.build>
-            </properties>
-        </profile>
+		<profile>
+			<id>jenkins</id>
+			<properties>
+				<env.mode>DEV</env.mode>
+				<gae.application.version>test</gae.application.version>
+				<gae.application.name>gaemvnreponightlybuild</gae.application.name>
+				<gae.application.build>${BUILD_ID}</gae.application.build>
+			</properties>
+		</profile>
+		<profile>
+			<id>dev</id>
+			<properties>
+				<env.mode>DEV</env.mode>
+				<gae.application.version>test</gae.application.version>
+				<gae.application.name>local</gae.application.name>
+				<gae.application.build>${user.name}</gae.application.build>
+			</properties>
+		</profile>
 	</profiles>
 
 </project>

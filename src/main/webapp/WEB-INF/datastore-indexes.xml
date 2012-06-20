@@ -1,0 +1,7 @@
+<datastore-indexes autoGenerate="false">
+
+   <datastore-index kind="File" ancestor="true" source="auto">
+        <property name="files_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+    
+</datastore-indexes>
