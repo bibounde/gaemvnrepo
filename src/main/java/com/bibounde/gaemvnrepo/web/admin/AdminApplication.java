@@ -14,16 +14,19 @@ import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.domain.Role;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
+import com.bibounde.gaemvnrepo.shared.domain.repository.NavigationNode;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserId;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.history.Historizable;
+import com.bibounde.gaemvnrepo.shared.service.RepositoryService;
 import com.bibounde.gaemvnrepo.shared.service.UserService;
 import com.bibounde.gaemvnrepo.web.admin.detail.home.HomeView;
 import com.bibounde.gaemvnrepo.web.admin.detail.profile.ProfileView;
-import com.bibounde.gaemvnrepo.web.admin.detail.repository.BrowseRepositoryView;
+import com.bibounde.gaemvnrepo.web.admin.detail.repository.BrowserRepositoryView;
+import com.bibounde.gaemvnrepo.web.admin.detail.repository.BrowserRepositoryViewHelper;
 import com.bibounde.gaemvnrepo.web.admin.detail.system.SystemConfigurationView;
 import com.bibounde.gaemvnrepo.web.admin.detail.user.BrowserUserView;
 import com.bibounde.gaemvnrepo.web.admin.detail.user.BrowserUserViewHelper;
@@ -55,13 +58,16 @@ public class AdminApplication extends Application implements Controller, History
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(AdminApplication.class);
 
-    private static final int DEFAULT_DETAIL_VIEW_SELECTED_INDEX = 4;
+    private static final int DEFAULT_DETAIL_VIEW_SELECTED_INDEX = 1;
     private Map<String, View> viewMap = new HashMap<String, View>();
     private List<String> detailViewIds = new ArrayList<String>();
     private int currentDetailViewIndex = -1;
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private RepositoryService repositoryService;
 
     public WebApplicationContext appContext;
     private MainPage mainPage;
@@ -70,6 +76,7 @@ public class AdminApplication extends Application implements Controller, History
     private UriFragmentUtility uriFragmentUtility;
     private BrowserUserViewHelper browserViewHelper = new BrowserUserViewHelper();
     private UserEditViewHelper userEditViewHelper = new UserEditViewHelper();
+    private BrowserRepositoryViewHelper browserRepositoryViewHelper = new BrowserRepositoryViewHelper();
 
     @Override
     public void init() {
@@ -144,7 +151,7 @@ public class AdminApplication extends Application implements Controller, History
         this.detailViewIds.add(HomeView.ID);
 
         menuItems.add(MenuItem.BROWSE_REPOSITORY_ITEM);
-        this.detailViewIds.add(BrowseRepositoryView.ID);
+        this.detailViewIds.add(BrowserRepositoryView.ID);
 
         if (info.role == Role.ADMIN) {
             menuItems.add(MenuItem.SYSTEM_CONFIGURATION_ITEM);
@@ -210,6 +217,8 @@ public class AdminApplication extends Application implements Controller, History
                         this.browserViewHelper.initView();
                     } else if (UserEditView.ID.equals(detailView.getId())) {
                         this.userEditViewHelper.initView();
+                    } else if (BrowserRepositoryView.ID.equals(detailView.getId())) {
+                        this.browserRepositoryViewHelper.initView(null, this.repositoryService);
                     } 
                 }
             } else if (BrowserUserView.ID.equals(viewId)) {
@@ -273,6 +282,15 @@ public class AdminApplication extends Application implements Controller, History
                     history.setAction(HistoryAction.ACTION_SELECT_USER);
                     history.setViewId(UserEditView.ID);
                     history.setParams(historyItem.encode());
+                }
+            } else if (BrowserRepositoryView.ID.equals(viewId)){
+                if (BrowserRepositoryView.ACTION_NODE_EXPANDED.equals(action)) {
+                    NavigationNode node = (NavigationNode) actionParams[0];
+                    logger.debug("Node {} expanded", node.path);
+                    //No history
+                    this.browserRepositoryViewHelper.nodeExpanded(node, this.repositoryService);
+                } else {
+                    logger.warn("{} action is not supported for {}", action, BrowserRepositoryView.ID);
                 }
             }
 
@@ -356,8 +374,9 @@ public class AdminApplication extends Application implements Controller, History
 
             if (HomeView.ID.equals(newViewId)) {
                 view = new HomeView();
-            } else if (BrowseRepositoryView.ID.equals(newViewId)) {
-                view = new BrowseRepositoryView();
+            } else if (BrowserRepositoryView.ID.equals(newViewId)) {
+                view = new BrowserRepositoryView();
+                this.browserRepositoryViewHelper.setView((BrowserRepositoryView) view);
             } else if (SystemConfigurationView.ID.equals(newViewId)) {
                 view = new SystemConfigurationView();
             } else if (BrowserUserView.ID.equals(newViewId)) {

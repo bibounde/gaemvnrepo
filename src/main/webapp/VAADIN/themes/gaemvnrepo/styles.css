@@ -58,3 +58,9 @@
 .gaemvnrepo-notification-error {
     color : red;
 }
+
+.gaemvnrepo-tree-panel {
+    background-color: #F6F6F6;
+    border: 1px solid #BBB;
+    box-sizing: border-box;
+}

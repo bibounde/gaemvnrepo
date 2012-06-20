@@ -1,6 +1,7 @@
 package com.bibounde.gaemvnrepo.server.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +19,8 @@ import com.bibounde.gaemvnrepo.model.File;
 import com.bibounde.gaemvnrepo.model.Repository;
 import com.bibounde.gaemvnrepo.server.PMF;
 import com.bibounde.gaemvnrepo.server.dao.RepositoryDao;
+import com.bibounde.gaemvnrepo.shared.domain.repository.FileNavigationNode;
+import com.bibounde.gaemvnrepo.shared.domain.repository.RepositoryNavigationNode;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.service.RepositoryService;
@@ -127,7 +130,7 @@ public class RepositoryServiceImpl implements RepositoryService {
                     if (dirPath != null) {
                         dirPath.append("/").append(dir);
                     } else {
-                        dirPath = new StringBuilder(dir);
+                        dirPath = new StringBuilder(repository.getName() + "/" + dir);
                     }
                     logger.trace("Checks if directory {} exists.", dirPath.toString());
                     if (this.repositoryDao.findFileByPath(dirPath.toString(), pm) == null) {
@@ -150,7 +153,7 @@ public class RepositoryServiceImpl implements RepositoryService {
             file.setCreator(creatorName);
             file.setDepth(splittedPath.length - 2);
             file.setDisposable(false);
-            file.setFile(false);
+            file.setFile(true);
             file.setName(splittedPath[splittedPath.length - 1]);
             file.setPath(filePath);
             file.setContent(content);
@@ -367,6 +370,73 @@ public class RepositoryServiceImpl implements RepositoryService {
             if (tx != null && tx.isActive()) {
                 tx.rollback();
             }
+            pm.close();
+        }
+    }
+
+    @Override
+    public List<RepositoryNavigationNode> getRepositoryNavigationNodes() throws TechnicalException, BusinessException {
+        PersistenceManager pm = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            List<Repository> repositories = this.repositoryDao.findReposirories(pm);
+            List<RepositoryNavigationNode> ret = new ArrayList<RepositoryNavigationNode>();
+            for (Repository repository : repositories) {
+                RepositoryNavigationNode node = new RepositoryNavigationNode();
+                node.id = repository.getId();
+                node.path = repository.getName();
+                node.name = repository.getName();
+                node.snapshots = repository.isSnapshots();
+                ret.add(node);
+            }
+            
+            return ret;
+        } catch (TechnicalException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to read in db", e);
+        } finally {
+            pm.close();
+        }
+    }
+
+    @Override
+    public List<FileNavigationNode> getFileNavigationNodes(String parentPath, int parentDepth) throws TechnicalException, BusinessException {
+        PersistenceManager pm = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            List<File> files = this.repositoryDao.findFileByParentPath(parentPath, parentDepth, pm);
+            List<FileNavigationNode> ret = new ArrayList<FileNavigationNode>();
+            for (File file : files) {
+                FileNavigationNode node = new FileNavigationNode();
+               
+                node.file = file.isFile();
+                node.created = new Date(file.getCreationDate());
+                node.creator = file.getCreator();
+                node.mime = file.getMime();
+                node.name = file.getName();
+                node.path = file.getPath();
+                node.depth = file.getDepth();
+                
+                ret.add(node);
+            }
+            
+            return ret;
+        } catch (TechnicalException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to read in db", e);
+        } finally {
             pm.close();
         }
     }

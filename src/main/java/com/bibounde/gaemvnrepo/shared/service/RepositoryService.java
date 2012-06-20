@@ -7,6 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.bibounde.gaemvnrepo.model.File;
 import com.bibounde.gaemvnrepo.model.Repository;
+import com.bibounde.gaemvnrepo.shared.domain.repository.FileNavigationNode;
+import com.bibounde.gaemvnrepo.shared.domain.repository.RepositoryNavigationNode;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 
@@ -80,4 +82,24 @@ public interface RepositoryService extends Serializable{
      * @throws TechnicalException
      */
     List<String> findSnapshotsReposiroryNames() throws TechnicalException;
+    
+    /**
+     * Retrieves repository navigation nodes
+     * @return navigation node list
+     * @throws TechnicalException
+     * @throws BusinessException
+     */
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    List<RepositoryNavigationNode> getRepositoryNavigationNodes() throws TechnicalException, BusinessException;
+    
+    /**
+     * Retrieves file navigation nodes
+     * @param parent path
+     * @param parent depth
+     * @return file node list
+     * @throws TechnicalException
+     * @throws BusinessException
+     */
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    List<FileNavigationNode> getFileNavigationNodes(String parentPath, int parentDepth) throws TechnicalException, BusinessException;
 }

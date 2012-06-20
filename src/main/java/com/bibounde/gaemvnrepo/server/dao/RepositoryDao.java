@@ -1,5 +1,6 @@
 package com.bibounde.gaemvnrepo.server.dao;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
@@ -9,7 +10,7 @@ import com.bibounde.gaemvnrepo.model.Repository;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 
-public interface RepositoryDao {
+public interface RepositoryDao extends Serializable {
 
     /**
      * Retrieves repository by name
@@ -29,6 +30,16 @@ public interface RepositoryDao {
      * @throws TechnicalException
      */
     File findFileByPath(String path, PersistenceManager pm) throws TechnicalException;
+    
+    /**
+     * Retrieves file from its path and depth
+     * @param parentPath
+     * @param parentDepth
+     * @param pm persistence manager
+     * @return file object or null if does not exist
+     * @throws TechnicalException
+     */
+    List<File> findFileByParentPath(String parentPath, int parentDepth, PersistenceManager pm) throws TechnicalException;
     
     /**
      * Retrieves disposable file from its path
@@ -66,4 +77,12 @@ public interface RepositoryDao {
      * @throws TechnicalException
      */
     List<Repository> findSnapshotsReposirories(PersistenceManager pm) throws TechnicalException;
+    
+    /**
+     * Retrieves repositories
+     * @param pm persistence manager
+     * @return repository list
+     * @throws TechnicalException
+     */
+    List<Repository> findReposirories(PersistenceManager pm) throws TechnicalException;
 }

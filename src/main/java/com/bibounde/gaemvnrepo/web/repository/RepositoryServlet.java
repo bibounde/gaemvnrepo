@@ -72,8 +72,8 @@ public class RepositoryServlet extends AbstractSpringServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String filePath = this.getFilePath(req);
-        logger.debug("Maven attempt to put {}", filePath);
+        String reqFilePath = this.getFilePath(req);
+        logger.debug("Maven attempt to put {}", reqFilePath);
         
         if (req.getContentLength() > 0) {
             ByteArrayOutputStream output = null;
@@ -87,9 +87,9 @@ public class RepositoryServlet extends AbstractSpringServlet {
                 }
                 byte[] content = output.toByteArray();
 
-                this.repositoryService.uploadFile(this.getRepositoryName(filePath), filePath, content, req.getContentType());
+                this.repositoryService.uploadFile(this.getRepositoryName(reqFilePath), reqFilePath, content, req.getContentType());
                 
-                logger.debug("{} successfully uploaded", filePath);
+                logger.debug("{} successfully uploaded", reqFilePath);
                 resp.setStatus(HttpServletResponse.SC_OK);
             } catch (TechnicalException e) {
                 logger.error("Unable to execute upload operation", e);

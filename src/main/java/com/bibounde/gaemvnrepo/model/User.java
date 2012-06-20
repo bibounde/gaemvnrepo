@@ -1,5 +1,6 @@
 package com.bibounde.gaemvnrepo.model;
 
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NullValue;
@@ -31,9 +32,11 @@ public class User implements Disposable {
     private Role role = Role.UPLOADER;
     
     @Persistent
+    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private String locale;
     
     @Persistent
+    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private long created;
     
     @Persistent

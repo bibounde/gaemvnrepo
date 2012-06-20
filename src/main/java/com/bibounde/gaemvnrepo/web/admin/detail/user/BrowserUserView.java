@@ -179,7 +179,7 @@ public class BrowserUserView extends VerticalLayout implements View, PaginationL
                     boolean value = (Boolean) property.getValue();
                     if (value) {
                         Embedded ret = new Embedded();
-                        ret.setSource(new ExternalResource("/static/icons/accept-16.png"));
+                        ret.setSource(new ExternalResource("/static/icons/table-checked-16.png"));
                         return ret;
                     }
                 }

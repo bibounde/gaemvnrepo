@@ -1,7 +1,6 @@
 package com.bibounde.gaemvnrepo.model;
 
-import java.io.Serializable;
-
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NullValue;
@@ -24,12 +23,14 @@ public class File implements Disposable {
     private String path;
     
     @Persistent(nullValue=NullValue.EXCEPTION)
+    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private String name;
 
     @Persistent
     private int depth;
     
     @Persistent
+    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private boolean file;
 
     @Persistent
@@ -39,9 +40,11 @@ public class File implements Disposable {
     private String creator;
     
     @Persistent
+    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private String mime;
     
     @Persistent
+    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private Blob content;
     
     private boolean disposable;

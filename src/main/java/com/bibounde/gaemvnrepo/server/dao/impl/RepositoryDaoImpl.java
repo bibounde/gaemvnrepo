@@ -54,6 +54,26 @@ public class RepositoryDaoImpl implements RepositoryDao {
             }
         }
     }
+    
+    @Override
+    public List<File> findFileByParentPath(String parentPath, int parentDepth, PersistenceManager pm) throws TechnicalException {
+        Query query = null;
+        try {
+            query = pm.newQuery(File.class);
+            query.setFilter("path.startsWith(pathParam) && depth == depthParam && disposable == false");
+            query.declareParameters("String pathParam, int depthParam");
+
+            List<File> files = (List<File>) query.execute(parentPath, parentDepth);
+
+            return files;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to execute query", e);
+        } finally {
+            if (query != null) {
+                query.closeAll();
+            }
+        }
+    }
 
     @Override
     public List<File> findAllFiles(String dirPath, PersistenceManager pm) throws TechnicalException {
@@ -110,6 +130,25 @@ public class RepositoryDaoImpl implements RepositoryDao {
             List<File> files = (List<File>) query.execute(path);
 
             return files.isEmpty() ? null : files.get(0);
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to execute query", e);
+        } finally {
+            if (query != null) {
+                query.closeAll();
+            }
+        }
+    }
+
+    @Override
+    public List<Repository> findReposirories(PersistenceManager pm) throws TechnicalException {
+        Query query = null;
+        try {
+            query = pm.newQuery(Repository.class);
+            query.setFilter("disposable == false");
+            
+            List<Repository> repositories = (List<Repository>) query.execute();
+
+            return repositories;
         } catch (Exception e) {
             throw new TechnicalException("Unable to execute query", e);
         } finally {
