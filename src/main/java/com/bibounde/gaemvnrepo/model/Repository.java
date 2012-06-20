@@ -2,7 +2,6 @@ package com.bibounde.gaemvnrepo.model;
 
 import java.util.List;
 
-import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NullValue;
@@ -25,7 +24,6 @@ public class Repository implements Disposable {
     private boolean snapshots = false;
     
     @Persistent
-    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private List<File> files;
     
     @Persistent
