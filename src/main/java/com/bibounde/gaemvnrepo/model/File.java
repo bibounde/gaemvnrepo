@@ -23,14 +23,12 @@ public class File implements Disposable {
     private String path;
     
     @Persistent(nullValue=NullValue.EXCEPTION)
-    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private String name;
 
     @Persistent
     private int depth;
     
     @Persistent
-    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private boolean file;
 
     @Persistent
@@ -40,11 +38,9 @@ public class File implements Disposable {
     private String creator;
     
     @Persistent
-    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private String mime;
     
     @Persistent
-    @Extension(vendorName="datanucleus", key="gae.unindexed", value="true")
     private Blob content;
     
     private boolean disposable;
