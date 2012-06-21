@@ -95,6 +95,7 @@ public class UserEditView extends VerticalLayout implements View {
         this.saveButton.addListener(new ClickListener() {
             
             @Override
+            @edu.umd.cs.findbugs.annotations.SuppressWarnings(value={"REC_CATCH_EXCEPTION"}, justification="Exception is managed by form")
             public void buttonClick(ClickEvent event) {
                 try {
                     profileForm.commit();

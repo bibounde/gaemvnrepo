@@ -19,7 +19,7 @@ public class ProfileModel implements Model{
 
     @Override
     public void removeModelEventListener(ModelEventListener listener) {
-        this.removeModelEventListener(listener);
+        this.listeners.remove(listener);
     }
 
 }
