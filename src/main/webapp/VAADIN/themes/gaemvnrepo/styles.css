@@ -59,6 +59,10 @@
     color : red;
 }
 
+.gaemvnrepo-notification-warning {
+    color : orange;
+}
+
 .gaemvnrepo-tree-panel {
     background-color: #F6F6F6;
     border: 1px solid #BBB;

@@ -1,6 +1,5 @@
 package com.bibounde.gaemvnrepo.server;
 
-import java.util.Locale;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -11,7 +10,7 @@ import com.bibounde.gaemvnrepo.model.User;
 import com.bibounde.gaemvnrepo.model.User.Role;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
-import com.bibounde.gaemvnrepo.shared.service.DevService;
+import com.bibounde.gaemvnrepo.shared.service.GaeService;
 import com.bibounde.gaemvnrepo.shared.service.RepositoryService;
 import com.bibounde.gaemvnrepo.shared.service.UserService;
 
@@ -24,7 +23,7 @@ public class Initializer {
     private UserService userService;
     
     @Autowired
-    private DevService devService;
+    private GaeService devService;
     
     @Autowired
     private RepositoryService repositoryService;

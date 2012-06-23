@@ -81,25 +81,51 @@
         <servlet-name>AdminServlet</servlet-name>
         <url-pattern>/VAADIN/*</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>MigrationServlet</servlet-name>
+        <!-- >servlet-class>com.vaadin.terminal.gwt.server.GAEApplicationServlet</servlet-class-->
+        <servlet-class>com.bibounde.gaemvnrepo.web.AutowiringVaadinApplicationServlet</servlet-class>
+        <init-param>
+            <description>Migration UI console</description>
+            <param-name>application</param-name>
+            <param-value>com.bibounde.gaemvnrepo.web.migration.MigrationApplication</param-value>
+        </init-param>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>MigrationServlet</servlet-name>
+        <url-pattern>/migration/*</url-pattern>
+    </servlet-mapping>
 
     <servlet>
-        <servlet-name>FileDeletionServlet</servlet-name>
+        <servlet-name>FileQueueDeletionServlet</servlet-name>
         <servlet-class>com.bibounde.gaemvnrepo.web.queue.FileDeletionServlet</servlet-class>
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>FileDeletionServlet</servlet-name>
+        <servlet-name>FileQueueDeletionServlet</servlet-name>
         <url-pattern>/tasks/delete/file</url-pattern>
     </servlet-mapping>
     
     <servlet>
-        <servlet-name>UserDeletionServlet</servlet-name>
+        <servlet-name>UserQueueDeletionServlet</servlet-name>
         <servlet-class>com.bibounde.gaemvnrepo.web.queue.UserDeletionServlet</servlet-class>
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>UserDeletionServlet</servlet-name>
+        <servlet-name>UserQueueDeletionServlet</servlet-name>
         <url-pattern>/tasks/delete/user</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>MigrationQueueServlet</servlet-name>
+        <servlet-class>com.bibounde.gaemvnrepo.web.queue.MigrationServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>MigrationQueueServlet</servlet-name>
+        <url-pattern>/tasks/migration</url-pattern>
     </servlet-mapping>
     
     <security-constraint>
@@ -121,6 +147,16 @@
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
+
+    <filter>
+      <filter-name>migrationFilterChain</filter-name>
+      <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+
+    <filter-mapping>
+      <filter-name>migrationFilterChain</filter-name>
+      <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter>
       <filter-name>springSecurityFilterChain</filter-name>

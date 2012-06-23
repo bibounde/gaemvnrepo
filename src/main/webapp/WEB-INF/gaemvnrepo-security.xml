@@ -29,12 +29,13 @@
     </beans:bean>
 
 	<http use-expressions="true"  entry-point-ref="daep">
-	    <intercept-url pattern="/VAADIN/**" access="hasAnyRole('admin','manager')" />
 	    <intercept-url pattern="/admin/**" access="hasAnyRole('admin','manager')" />
 	    <intercept-url pattern="/repo/**" access="permitAll" method="GET"/>
 	    <intercept-url pattern="/repo/**" access="hasAnyRole('admin','manager')" method="PUT"/>
 	    <intercept-url pattern="/repo/**" access="hasAnyRole('admin','manager')" method="POST"/>
 	    
+	    <intercept-url pattern="/migration/**" access="permitAll" />
+	    <intercept-url pattern="/VAADIN/**" access="permitAll" />
 	    <intercept-url pattern="/cron/**" access="permitAll" />
 	    <intercept-url pattern="/tasks/**" access="permitAll" />
 		<intercept-url pattern="/login*" access="permitAll" />

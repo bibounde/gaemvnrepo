@@ -14,7 +14,10 @@
     <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
     <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
     
-    <bean id="initializer" init-method="init" class="com.bibounde.gaemvnrepo.server.Initializer"></bean>
+    <bean id="migrationService" init-method="init" class="com.bibounde.gaemvnrepo.server.service.impl.MigrationServiceImpl" ></bean>
+    <!-- bean id="initializer" init-method="init" class="com.bibounde.gaemvnrepo.server.Initializer"></bean-->
+    
+    <bean id="migrationFilterChain" class="com.bibounde.gaemvnrepo.web.migration.MigrationFilter"></bean>
     
     <import resource="gaemvnrepo-security.xml"/>
 </beans>

@@ -1,6 +1,5 @@
 package com.bibounde.gaemvnrepo.model;
 
-import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NullValue;
@@ -43,6 +42,7 @@ public class File implements Disposable {
     @Persistent
     private Blob content;
     
+    @Persistent
     private boolean disposable;
 
     /**

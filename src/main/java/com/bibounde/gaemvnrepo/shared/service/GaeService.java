@@ -1,10 +1,11 @@
 package com.bibounde.gaemvnrepo.shared.service;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 
-public interface DevService extends Serializable {
+public interface GaeService extends Serializable {
 
     /**
      * Delete all elements stored in db

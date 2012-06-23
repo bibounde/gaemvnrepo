@@ -1,14 +1,16 @@
 package com.bibounde.gaemvnrepo.server.service.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.bibounde.gaemvnrepo.model.AppliedMigration;
 import com.bibounde.gaemvnrepo.model.User;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
-import com.bibounde.gaemvnrepo.shared.service.DevService;
+import com.bibounde.gaemvnrepo.shared.service.GaeService;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -16,16 +18,16 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 
 @Service("demoService")
-public class GAEDevServiceImpl implements DevService {
+public class GAEServiceImpl implements GaeService {
 
     @SuppressWarnings("unused")
-    private static final Logger logger = LoggerFactory.getLogger(GAEDevServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(GAEServiceImpl.class);
 
     @Override
     public void deleteAll() throws TechnicalException {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         
-        //No transaction (can't operate on multiple entity groups in a single transaction.found both Element)
+        //No transaction ("can't operate on multiple entity groups in a single transaction.found both Element")
         
         try {
 
@@ -45,5 +47,4 @@ public class GAEDevServiceImpl implements DevService {
             throw new TechnicalException("Unable to delete users", e);
         }
     }
-
 }
