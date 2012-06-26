@@ -20,7 +20,7 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(Repository.class);
-            query.setFilter("name == nameParam && disposable == false");
+            query.setFilter("name == nameParam");
             query.declareParameters("String nameParam");
 
             List<Repository> repositories = (List<Repository>) query.execute(name);
@@ -40,7 +40,7 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(File.class);
-            query.setFilter("path == pathParam && disposable == false");
+            query.setFilter("path == pathParam");
             query.declareParameters("String pathParam");
 
             List<File> files = (List<File>) query.execute(path);
@@ -60,7 +60,7 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(File.class);
-            query.setFilter("path.startsWith(pathParam) && depth == depthParam && disposable == false");
+            query.setFilter("path.startsWith(pathParam) && depth == depthParam");
             query.declareParameters("String pathParam, int depthParam");
 
             List<File> files = (List<File>) query.execute(parentPath, parentDepth);
@@ -76,8 +76,8 @@ public class RepositoryDaoImpl implements RepositoryDao {
     }
 
     @Override
-    public List<File> findAllFiles(String dirPath, PersistenceManager pm) throws TechnicalException {
-        return this.findFileStartWith(dirPath + "/", pm);
+    public List<File> findAllFiles(String dirPath, boolean inclusive, PersistenceManager pm) throws TechnicalException {
+        return this.findFileStartWith(dirPath +  (inclusive ? "" : "/"), pm);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(File.class);
-            query.setFilter("path.startsWith(pathParam) && disposable == false");
+            query.setFilter("path.startsWith(pathParam)");
             query.declareParameters("String pathParam");
 
             List<File> files = (List<File>) query.execute(prefix);
@@ -105,7 +105,7 @@ public class RepositoryDaoImpl implements RepositoryDao {
         Query query = null;
         try {
             query = pm.newQuery(Repository.class);
-            query.setFilter("snapshots == true && disposable == false");
+            query.setFilter("snapshots == true");
             
             List<Repository> repositories = (List<Repository>) query.execute();
 
@@ -120,31 +120,10 @@ public class RepositoryDaoImpl implements RepositoryDao {
     }
 
     @Override
-    public File findDisposableFileByPath(String path, PersistenceManager pm) throws TechnicalException {
-        Query query = null;
-        try {
-            query = pm.newQuery(File.class);
-            query.setFilter("path == pathParam && disposable == true");
-            query.declareParameters("String pathParam");
-
-            List<File> files = (List<File>) query.execute(path);
-
-            return files.isEmpty() ? null : files.get(0);
-        } catch (Exception e) {
-            throw new TechnicalException("Unable to execute query", e);
-        } finally {
-            if (query != null) {
-                query.closeAll();
-            }
-        }
-    }
-
-    @Override
     public List<Repository> findReposirories(PersistenceManager pm) throws TechnicalException {
         Query query = null;
         try {
             query = pm.newQuery(Repository.class);
-            query.setFilter("disposable == false");
             
             List<Repository> repositories = (List<Repository>) query.execute();
 

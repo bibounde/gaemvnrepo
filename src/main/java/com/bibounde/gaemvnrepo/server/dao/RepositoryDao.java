@@ -42,24 +42,15 @@ public interface RepositoryDao extends Serializable {
     List<File> findFileByParentPath(String parentPath, int parentDepth, PersistenceManager pm) throws TechnicalException;
     
     /**
-     * Retrieves disposable file from its path
-     * 
-     * @param path
-     * @param pm persistence manager
-     * @return file object or null if does not exist
-     * @throws TechnicalException
-     */
-    File findDisposableFileByPath(String path, PersistenceManager pm) throws TechnicalException;
-    
-    /**
      * Retrieves all files contained in dir contains (recursively)
-     * @param dirPath dir path 
+     * @param dirPath dir path
+     * @param inclusive true means that dir with dipath is retrieved
      * @param pm persistence manager
      * @return file list
      * @throws TechnicalException
      * @throws BusinessException 
      */
-    List<File> findAllFiles(String dirPath, PersistenceManager pm) throws TechnicalException;
+    List<File> findAllFiles(String dirPath, boolean inclusive, PersistenceManager pm) throws TechnicalException;
     
     /**
      * Retrieves file whose path starts with prefix

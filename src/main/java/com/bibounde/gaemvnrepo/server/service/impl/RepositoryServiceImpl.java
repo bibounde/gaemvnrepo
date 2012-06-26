@@ -1,5 +1,8 @@
 package com.bibounde.gaemvnrepo.server.service.impl;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +27,12 @@ import com.bibounde.gaemvnrepo.shared.domain.repository.RepositoryNavigationNode
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.service.RepositoryService;
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -90,6 +99,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 
     @Override
     public void uploadFile(String name, String filePath, byte[] content, String mime) throws TechnicalException, BusinessException {
+        BlobKey blobKey = null;
+        if (content != null) {
+            blobKey = this.storeFileContent(content, mime);
+        }
+        
         String creatorName = SecurityContextHolder.getContext().getAuthentication().getName();
 
         PersistenceManager pm = null;
@@ -101,7 +115,7 @@ public class RepositoryServiceImpl implements RepositoryService {
             throw new TechnicalException("Persistence initialization failed", e);
         }
         
-        List<String> filesToDelete = new ArrayList<String>();
+        String blobKeyToDelete = null;
 
         try {
             tx.begin();
@@ -120,7 +134,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 
             if (found != null) {
                 logger.debug("File {} exists. Need to delete first", filePath);
-                pm.deletePersistent(found);
+                blobKeyToDelete = found.getContentKey().getKeyString();
+                repository.getFiles().remove(found);
+                //pm.deletePersistent(found);
             } else {
                 // Check if parent creation is needed
                 logger.debug("Checks if parent of {} must be created", filePath);
@@ -147,33 +163,36 @@ public class RepositoryServiceImpl implements RepositoryService {
                 }
             }
 
-            logger.debug("Creates file {}", filePath);
+            logger.debug("Creates file {}", filePath); 
             File file = new File();
             file.setCreationDate(System.currentTimeMillis());
             file.setCreator(creatorName);
             file.setDepth(splittedPath.length - 2);
-            file.setDisposable(false);
             file.setFile(true);
             file.setName(splittedPath[splittedPath.length - 1]);
             file.setPath(filePath);
-            file.setContent(content);
-            file.setMime(mime);
+            file.setContentKey(blobKey);
             repository.getFiles().add(file);
+            
+            List<File> filesToDelete = new ArrayList<File>();
             
             // Snapshots management
             if (repository.isSnapshots() && filePath.matches(SNAPSHOTS_FILE_REGEX)) {
                 logger.debug("{} is a snapshot. Need to deprecate old files", filePath);
                 String dirPath = this.getDirPath(filePath);
-                List<File> toCheck = this.repositoryDao.findAllFiles(dirPath, pm);
+                List<File> toCheck = this.repositoryDao.findAllFiles(dirPath, false, pm);
                 if (!toCheck.isEmpty()) {
                     for (File f : toCheck) {
-                        if (!f.equals(found) && !f.isDisposable() && this.isSnaspshotsOfSameFile(filePath, f.getPath())) {
-                            logger.trace("{} will be deprecated", f.getPath());
-                            f.setDisposable(true);
-                            filesToDelete.add(f.getPath());
+                        if (!f.equals(found) && this.isSnaspshotsOfSameFile(filePath, f.getPath())) {
+                            logger.trace("{} must be deleted", f.getPath());
+                            filesToDelete.add(f);
                         }
                     }   
                 }
+            }
+            
+            for (File toDelete : filesToDelete) {
+                repository.getFiles().remove(toDelete);
             }
 
             tx.commit();
@@ -190,14 +209,58 @@ public class RepositoryServiceImpl implements RepositoryService {
             pm.close();
         }
         
-        //Add file to delete in queue. Not in the transaction for quotas reason
+        //Not in the transaction because blob and repo are not in the same group
         try {
             Queue queue = QueueFactory.getDefaultQueue();
-            for (String toDeletePath : filesToDelete) {
-                queue.add(TaskOptions.Builder.withUrl("/tasks/delete/file").param("filepath", toDeletePath).param("repository", name));
+            if (blobKeyToDelete != null) {
+                queue.add(TaskOptions.Builder.withUrl("/tasks/delete/blob").param("blobkey", blobKeyToDelete));
             }
         } catch (Exception e) {
             throw new TechnicalException("Unable to perform queue operation", e);
+        }
+    }
+    
+    /**
+     * Store file content in Blobstore
+     * @param content file content
+     * @param mime content type
+     * @return BlobKey
+     * @throws TechnicalException
+     */
+    private BlobKey storeFileContent(byte[] content, String mime) throws TechnicalException {
+        PersistenceManager pm = null;
+        Transaction tx = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+            tx = pm.currentTransaction();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+        try {
+            tx.begin();
+            FileService fileService = FileServiceFactory.getFileService();
+            AppEngineFile blobFile = fileService.createNewBlobFile(mime);
+            // Open a channel to write to it
+            boolean lock = true;
+            FileWriteChannel writeChannel = null;
+            writeChannel = fileService.openWriteChannel(blobFile, lock);
+            BufferedInputStream in = new BufferedInputStream(new ByteArrayInputStream(content));
+            byte[] buffer = new byte[BlobstoreService.MAX_BLOB_FETCH_SIZE];
+            int read;
+            while( (read = in.read(buffer)) > 0 ){ //-1 means EndOfStream
+                ByteBuffer bb = ByteBuffer.wrap(buffer, 0, read);
+                writeChannel.write(bb);
+            }
+            writeChannel.closeFinally();
+            tx.commit();
+            return fileService.getBlobKey(blobFile);
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to store blob", e);
+        } finally {
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
+            pm.close();
         }
     }
 
@@ -245,7 +308,7 @@ public class RepositoryServiceImpl implements RepositoryService {
             }
             this.checkFileQueryParam(repository, dirPath, pm);
 
-            return this.repositoryDao.findAllFiles(dirPath, pm);
+            return this.repositoryDao.findAllFiles(dirPath, false, pm);
         } catch (BusinessException e) {
             return null;
         } catch (TechnicalException e) {
@@ -274,11 +337,13 @@ public class RepositoryServiceImpl implements RepositoryService {
         if (filePath == null || !filePath.startsWith(mandatoryFilePrefix)) {
             throw new BusinessException(filePath + " must start with " + mandatoryFilePrefix);
         }
-
+        //TODO: checks if it is really necessary
+        /*
         String[] splitted = filePath.split("/");
         if (splitted.length < 4) {
             throw new BusinessException("The depth of " + filePath + " is invalid. It must be greather than 4 (found " + splitted.length + ")");
         }
+        */
     }
     
     /**
@@ -306,12 +371,12 @@ public class RepositoryServiceImpl implements RepositoryService {
             String regex = matcher.replaceAll(matcher.group(1) + SNAPSHOTS_TIMESTAMP_REGEX + matcher.group(3));
             ret = filePath2.matches(regex); 
         }
-        logger.trace("...{} and ...{} are {}a snapshot version of same file", new Object[]{filePath1.substring(filePath1.length()-40), filePath2.substring(filePath2.length()-40), !ret ? "NOT " : "" });
+        logger.trace("...{} and ...{} are {} a snapshot version of same file", new Object[]{filePath1.substring(filePath1.length()-40), filePath2.substring(filePath2.length()-40), !ret ? "NOT " : "" });
         return ret;
     }
 
     @Override
-    public List<String> findSnapshotsReposiroryNames() throws TechnicalException {
+    public List<String> getSnapshotsReposiroryNames() throws TechnicalException {
         PersistenceManager pm = null;
         try {
             pm = PMF.get().getPersistenceManager();
@@ -321,6 +386,31 @@ public class RepositoryServiceImpl implements RepositoryService {
 
         try {
             List<Repository> repositories = this.repositoryDao.findSnapshotsReposirories(pm);
+            List<String> ret = new ArrayList<String>();
+            for (Repository repo : repositories) {
+                ret.add(repo.getName());
+            }
+            return ret;
+        } catch (TechnicalException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to read in db", e);
+        } finally {
+            pm.close();
+        }
+    }
+    
+    @Override
+    public List<String> getReposiroryNames() throws TechnicalException {
+        PersistenceManager pm = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            List<Repository> repositories = this.repositoryDao.findReposirories(pm);
             List<String> ret = new ArrayList<String>();
             for (Repository repo : repositories) {
                 ret.add(repo.getName());
@@ -354,13 +444,9 @@ public class RepositoryServiceImpl implements RepositoryService {
             }
             this.checkFileQueryParam(repository, filePath, pm);
 
-            File disposableFile = this.repositoryDao.findDisposableFileByPath(filePath, pm);
-            
-            if (disposableFile != null) {
-                logger.debug("Performs deletion of {}", disposableFile.getPath());
-                pm.deletePersistent(disposableFile);
-            } else {
-                logger.debug("{} not found", filePath);
+            File file = this.repositoryDao.findFileByPath(filePath, pm);
+            if (file != null) {
+                repository.getFiles().remove(file);
             }
             
             tx.commit();
@@ -423,7 +509,6 @@ public class RepositoryServiceImpl implements RepositoryService {
                 node.file = file.isFile();
                 node.created = new Date(file.getCreationDate());
                 node.creator = file.getCreator();
-                node.mime = file.getMime();
                 node.name = file.getName();
                 node.path = file.getPath();
                 node.depth = file.getDepth();
@@ -441,4 +526,73 @@ public class RepositoryServiceImpl implements RepositoryService {
         }
     }
 
+    @Override
+    public List<String> getFileNames(String parentPath, int parentDepth) throws TechnicalException {
+        PersistenceManager pm = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        try {
+            List<File> files = this.repositoryDao.findFileByParentPath(parentPath, parentDepth, pm);
+            List<String> ret = new ArrayList<String>();
+            for (File file : files) {
+                ret.add(file.getName());
+            }
+            
+            return ret;
+        } catch (TechnicalException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to read in db", e);
+        } finally {
+            pm.close();
+        }
+    }
+
+    @Override
+    public void deleteAllFiles(String path) throws TechnicalException, BusinessException {
+        PersistenceManager pm = null;
+        Transaction tx = null;
+        try {
+            pm = PMF.get().getPersistenceManager();
+            tx = pm.currentTransaction();
+        } catch (Exception e) {
+            throw new TechnicalException("Persistence initialization failed", e);
+        }
+
+        List<String> blobKeyToDelete = new ArrayList<String>();
+        
+        try {
+            tx.begin();
+            List<File> files = this.repositoryDao.findAllFiles(path, true, pm);
+            for (File file : files) {
+                if (file.isFile()) {
+                    blobKeyToDelete.add(file.getContentKey().getKeyString());
+                }
+                pm.deletePersistent(file);
+            }
+            tx.commit();
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to persist", e);
+        } finally {
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
+            pm.close();
+        }
+        
+        //Not in the transaction because blobs and files are not in the same group
+        try {
+            Queue queue = QueueFactory.getDefaultQueue();
+            for (String key : blobKeyToDelete) {
+                queue.add(TaskOptions.Builder.withUrl("/tasks/delete/blob").param("blobkey", key));
+            }
+        } catch (Exception e) {
+            throw new TechnicalException("Unable to perform queue operation", e);
+        }
+    }
+    
 }

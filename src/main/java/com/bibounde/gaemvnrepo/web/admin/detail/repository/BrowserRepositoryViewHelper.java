@@ -36,6 +36,19 @@ public class BrowserRepositoryViewHelper implements Serializable {
         if (query == null) {
             List<RepositoryNavigationNode> repos = repositoryService.getRepositoryNavigationNodes();
             this.getModel().set(repos);
+        } else {
+            throw new TechnicalException("Not implemented yet", null);
+        }
+    }
+    
+    public void refresh(RepositoryNavigationNodeQuery query, RepositoryService repositoryService) throws TechnicalException, BusinessException {
+        this.checkState();
+        logger.debug("Refresh {} data", view.getId());
+        if (query == null) {
+            List<RepositoryNavigationNode> repos = repositoryService.getRepositoryNavigationNodes();
+            this.getModel().set(repos);
+        } else {
+            throw new TechnicalException("Not implemented yet", null);
         }
     }
     
@@ -43,7 +56,7 @@ public class BrowserRepositoryViewHelper implements Serializable {
         this.checkState();
         
         if (node.children != null) {
-            logger.debug("Node {} already expanded. Not necessary to retireves children", node.path);
+            logger.debug("Node {} already expanded. Not necessary to retrieves children", node.path);
         } else {
             if (node instanceof RepositoryNavigationNode) {
                 RepositoryNavigationNode repoNode = (RepositoryNavigationNode) node;
@@ -57,6 +70,13 @@ public class BrowserRepositoryViewHelper implements Serializable {
                 throw new TechnicalException(node.getClass().getName() + " is not supported", null);
             }
         }
+    }
+    
+    public void nodeDeleted(FileNavigationNode node, RepositoryService repositoryService) throws TechnicalException, BusinessException {
+        this.checkState();
+        logger.debug("File {} deleted", node.name);
+        repositoryService.deleteAllFiles(node.path);
+        this.getModel().deleteNode(node);
     }
     
     private void checkState() {

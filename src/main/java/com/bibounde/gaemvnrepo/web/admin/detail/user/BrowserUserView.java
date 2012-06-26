@@ -19,7 +19,7 @@ import com.bibounde.gaemvnrepo.web.mvc.View;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.event.Action;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Embedded;
@@ -108,7 +108,6 @@ public class BrowserUserView extends VerticalLayout implements View, PaginationL
 
         this.paginationBar = new PaginationBar();
         this.paginationBar.addPaginationListener(this);
-        
         
         this.initLayout();
     }

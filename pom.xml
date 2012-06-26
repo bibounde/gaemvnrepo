@@ -168,6 +168,18 @@
 			<version>${spring-aop.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.19</version>
+		</dependency>
+
 		<!-- Findbugs -->
 		<dependency>
 			<groupId>net.sourceforge.findbugs</groupId>

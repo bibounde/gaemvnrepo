@@ -77,11 +77,27 @@ public interface RepositoryService extends Serializable{
     void deleteFile(String name, String filePath) throws TechnicalException, BusinessException;
     
     /**
-     * Retrieves snapshots repository
+     * Retrieves snapshots repository names
      * @return repository name list
      * @throws TechnicalException
      */
-    List<String> findSnapshotsReposiroryNames() throws TechnicalException;
+    List<String> getSnapshotsReposiroryNames() throws TechnicalException;
+    
+    /**
+     * Retrieves repository names
+     * @return repository name list
+     * @throws TechnicalException
+     */
+    List<String> getReposiroryNames() throws TechnicalException;
+    
+    /**
+     * Retrieves file names
+     * @param parentPath
+     * @param parentDepth
+     * @return name list
+     * @throws TechnicalException
+     */
+    List<String> getFileNames(String parentPath, int parentDepth) throws TechnicalException;
     
     /**
      * Retrieves repository navigation nodes
@@ -89,7 +105,6 @@ public interface RepositoryService extends Serializable{
      * @throws TechnicalException
      * @throws BusinessException
      */
-    @PreAuthorize("hasAnyRole('admin', 'manager')")
     List<RepositoryNavigationNode> getRepositoryNavigationNodes() throws TechnicalException, BusinessException;
     
     /**
@@ -100,6 +115,14 @@ public interface RepositoryService extends Serializable{
      * @throws TechnicalException
      * @throws BusinessException
      */
-    @PreAuthorize("hasAnyRole('admin', 'manager')")
     List<FileNavigationNode> getFileNavigationNodes(String parentPath, int parentDepth) throws TechnicalException, BusinessException;
+    
+    /**
+     * Delete all files
+     * @param path 
+     * @throws TechnicalException
+     * @throws BusinessException 
+     */
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    void deleteAllFiles(String path) throws TechnicalException, BusinessException;
 }

@@ -10,6 +10,7 @@ import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.shared.domain.migration.MigrationResponse;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.service.MigrationService;
+import com.google.appengine.api.files.FileService;
 import com.vaadin.Application;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;

@@ -5,7 +5,7 @@ import java.util.Date;
 public class FileNavigationNode extends NavigationNode {
 
     public boolean file;
-    public String name, mime, creator;
+    public String name, creator;
     public Date created;
     public int depth;
 }

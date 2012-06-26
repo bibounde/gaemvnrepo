@@ -24,6 +24,8 @@ public class MigrationFilter implements Filter {
     private static final String VAADIN_EXCEPTION = "/VAADIN";
     private static final String TASKS_EXCEPTION = "/tasks";
     private static final String AH_EXCEPTION = "/_ah";
+    
+    private static final String REPO_URI = "/repo";
 
     @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(MigrationFilter.class);
@@ -47,8 +49,14 @@ public class MigrationFilter implements Filter {
             if (migrationService.isLocked()) {
                 if (!requestUri.startsWith(MIGRATION_EXCEPTION) && !requestUri.startsWith(VAADIN_EXCEPTION) && !requestUri.startsWith(TASKS_EXCEPTION)
                         && !requestUri.startsWith(AH_EXCEPTION)) {
-                    logger.debug("Application locked. Redirect to migration page");
-                    ((HttpServletResponse) response).sendRedirect("/migration");
+                    logger.debug("Application locked");
+                    if (requestUri.startsWith(REPO_URI)) {
+                        logger.debug("Return 503 for maven");
+                        httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                    } else {
+                        logger.debug("Redirect to migration page");
+                        ((HttpServletResponse) response).sendRedirect("/migration");
+                    }
                 } else {
                     logger.debug("Exception uri. Continue...");
                     chain.doFilter(request, response);

@@ -11,7 +11,7 @@ public class NavigationMenuModel implements Model {
 
     
     public enum MenuItem {
-        HOME_ITEM, BROWSE_REPOSITORY_ITEM, REPOSITORY_EDIT_ITEM, SYSTEM_CONFIGURATION_ITEM, BROWSE_USER_ITEM, USER_EDIT_ITEM, ROLE_ITEM, PROFILE_ITEM;
+        BROWSE_REPOSITORY_ITEM, SYSTEM_CONFIGURATION_ITEM, BROWSE_USER_ITEM, USER_EDIT_ITEM, PROFILE_ITEM;
     }
     
     public static final String MENU_ITEM_CHANGED = NavigationMenuModel.class.getName() + ".event.menuitemchanged";

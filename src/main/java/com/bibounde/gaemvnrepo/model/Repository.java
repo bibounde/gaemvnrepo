@@ -1,5 +1,6 @@
 package com.bibounde.gaemvnrepo.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -11,7 +12,7 @@ import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 //Not supported by GAE @Unique(name="REPOSITORY_UNIQUE_IDX", members={"name"})
-public class Repository implements Disposable {
+public class Repository implements Serializable {
 
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -25,9 +26,6 @@ public class Repository implements Disposable {
     
     @Persistent
     private List<File> files;
-    
-    @Persistent
-    private boolean disposable;
 
     /**
      * @return the files
@@ -83,19 +81,5 @@ public class Repository implements Disposable {
      */
     public void setSnapshots(boolean snapshots) {
         this.snapshots = snapshots;
-    }
-
-    /**
-     * @return the disposable
-     */
-    public boolean isDisposable() {
-        return disposable;
-    }
-
-    /**
-     * @param disposable the disposable to set
-     */
-    public void setDisposable(boolean disposable) {
-        this.disposable = disposable;
     }
 }

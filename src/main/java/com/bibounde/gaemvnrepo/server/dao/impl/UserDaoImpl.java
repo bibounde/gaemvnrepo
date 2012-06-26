@@ -39,7 +39,7 @@ public class UserDaoImpl implements UserDao {
         try {
             query = pm.newQuery(User.class);
 
-            StringBuilder filter = new StringBuilder("email == emailParam && disposable == false");
+            StringBuilder filter = new StringBuilder("email == emailParam");
             if (filterActivation) {
                 filter.append(" && active == true");
             }
@@ -65,7 +65,7 @@ public class UserDaoImpl implements UserDao {
         try {
             query = pm.newQuery(User.class);
 
-            StringBuilder filter = new StringBuilder("role == roleParam && disposable == false");
+            StringBuilder filter = new StringBuilder("role == roleParam");
             if (filterActivation) {
                 filter.append(" && active == true");
             }
@@ -90,7 +90,7 @@ public class UserDaoImpl implements UserDao {
         try {
             query = pm.newQuery(User.class);
 
-            StringBuilder filter = new StringBuilder("login == loginParam && disposable == false");
+            StringBuilder filter = new StringBuilder("login == loginParam");
             if (filterActivation) {
                 filter.append(" && active == true");
             }
@@ -116,7 +116,7 @@ public class UserDaoImpl implements UserDao {
         try {
             query = pm.newQuery(User.class);
 
-            StringBuilder filter = new StringBuilder("id == idParam && disposable == false");
+            StringBuilder filter = new StringBuilder("id == idParam");
             if (filterActivation) {
                 filter.append(" && active == true");
             }
@@ -141,7 +141,6 @@ public class UserDaoImpl implements UserDao {
         Query query = null;
         try {
             query = pm.newQuery(User.class);
-            query.setFilter("disposable == false");
             query.setResult("count(this)");
 
             return (Integer) query.execute();
@@ -172,7 +171,7 @@ public class UserDaoImpl implements UserDao {
         Query query = null;
         try {
             query = pm.newQuery(User.class);
-            query.setFilter("(" + property + " == param) && disposable == false");
+            query.setFilter("(" + property + " == param)");
             query.declareParameters("String param");
 
             List<User> users = (List<User>) query.execute(value);

@@ -14,10 +14,12 @@ public class BrowserRepositoryModel implements Model{
 
     public static final String REPOSITORY_INITIALIZED = BrowserRepositoryModel.class.getName() + ".event.repositoryinitialized";
     public static final String CHILDREN_ADDED = BrowserRepositoryModel.class.getName() + ".event.childrenadded";
+    public static final String NODE_DELETED = BrowserRepositoryModel.class.getName() + ".event.nodedeleted";
     
     private List<ModelEventListener> listeners = new ArrayList<ModelEventListener>();
     private List<RepositoryNavigationNode> nodes;
     private NavigationNode lastExpandedNode;
+    private NavigationNode deletedNode;
     
     /**
      * @return the nodes
@@ -46,6 +48,17 @@ public class BrowserRepositoryModel implements Model{
         }
     }
     
+    public void deleteNode(FileNavigationNode node) {
+        if (this.lastExpandedNode == node) {
+            this.lastExpandedNode = null;
+        }
+        this.deletedNode = node;
+        ModelEvent event = new ModelEvent(NODE_DELETED);
+        for (ModelEventListener listener : this.listeners) {
+            listener.modelChanged(event);
+        }
+    }
+    
     @Override
     public void addModelEventListener(ModelEventListener listener) {
         if (!this.listeners.contains(listener)) {
@@ -63,6 +76,20 @@ public class BrowserRepositoryModel implements Model{
      */
     public NavigationNode getLastExpandedNode() {
         return lastExpandedNode;
+    }
+
+    /**
+     * @return the nodeDeleted
+     */
+    public static String getNodeDeleted() {
+        return NODE_DELETED;
+    }
+
+    /**
+     * @return the deletedNode
+     */
+    public NavigationNode getDeletedNode() {
+        return deletedNode;
     }
 
 }

@@ -1,5 +1,7 @@
 package com.bibounde.gaemvnrepo.model;
 
+import java.io.Serializable;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NullValue;
@@ -7,12 +9,18 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import com.google.appengine.api.datastore.Blob;
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.appengine.api.blobstore.BlobInfo;
+import com.google.appengine.api.blobstore.BlobInfoFactory;
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 //Not supported by GAE @Unique(name = "FILE_UNIQUE_IDX", members = { "path" })
-public class File implements Disposable {
+public class File implements Serializable {
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -37,13 +45,7 @@ public class File implements Disposable {
     private String creator;
     
     @Persistent
-    private String mime;
-    
-    @Persistent
-    private Blob content;
-    
-    @Persistent
-    private boolean disposable;
+    private BlobKey contentKey;
 
     /**
      * @return the path
@@ -116,23 +118,6 @@ public class File implements Disposable {
     }
 
     /**
-     * @return the content
-     */
-    public byte[] getContent() {
-        if (content == null) {
-            return null;
-        }
-
-        return content.getBytes();
-    }
-
-    /**
-     * @param content the content to set
-     */
-    public void setContent(byte[] content) {
-        this.content = new Blob(content);
-    }
-    /**
      * @return the file
      */
     public boolean isFile() {
@@ -159,28 +144,45 @@ public class File implements Disposable {
     public void setId(Key id) {
         this.id = id;
     }
+    
+    /**
+     * @param contentKey the contentKey to set
+     */
+    public void setContentKey(BlobKey contentKey) {
+        this.contentKey = contentKey;
+    }
 
     /**
-     * @return the mime
+     * Retrieves file content
+     * @return file content
      */
-    public String getMime() {
-        return mime;
+    public byte[] getContent() {
+        BlobstoreService blobStoreService = BlobstoreServiceFactory.getBlobstoreService();
+        BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(this.contentKey);
+        
+        byte[] content = new byte[0];
+        
+        long amountLeftToRead = blobInfo.getSize();
+        long startIndex = 0;
+        while (amountLeftToRead > 0) {
+            long amountToReadNow = Math.min(
+                    BlobstoreService.MAX_BLOB_FETCH_SIZE - 1, amountLeftToRead);
+
+            byte[] chunkOfBytes = blobStoreService.fetchData(this.contentKey, startIndex, startIndex + amountToReadNow);
+
+            content = ArrayUtils.addAll(content, chunkOfBytes);
+
+            amountLeftToRead -= amountToReadNow;
+            startIndex += amountToReadNow;
+        }
+        
+        return content;
     }
 
     /**
-     * @param mime the mime to set
+     * @return the contentKey
      */
-    public void setMime(String mime) {
-        this.mime = mime;
-    }
-
-    @Override
-    public boolean isDisposable() {
-        return disposable;
-    }
-
-    @Override
-    public void setDisposable(boolean disposable) {
-        this.disposable = disposable;
+    public BlobKey getContentKey() {
+        return contentKey;
     }
 }

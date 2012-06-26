@@ -97,26 +97,6 @@
         <servlet-name>MigrationServlet</servlet-name>
         <url-pattern>/migration/*</url-pattern>
     </servlet-mapping>
-
-    <servlet>
-        <servlet-name>FileQueueDeletionServlet</servlet-name>
-        <servlet-class>com.bibounde.gaemvnrepo.web.queue.FileDeletionServlet</servlet-class>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>FileQueueDeletionServlet</servlet-name>
-        <url-pattern>/tasks/delete/file</url-pattern>
-    </servlet-mapping>
-    
-    <servlet>
-        <servlet-name>UserQueueDeletionServlet</servlet-name>
-        <servlet-class>com.bibounde.gaemvnrepo.web.queue.UserDeletionServlet</servlet-class>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>UserQueueDeletionServlet</servlet-name>
-        <url-pattern>/tasks/delete/user</url-pattern>
-    </servlet-mapping>
     
     <servlet>
         <servlet-name>MigrationQueueServlet</servlet-name>
@@ -126,6 +106,16 @@
     <servlet-mapping>
         <servlet-name>MigrationQueueServlet</servlet-name>
         <url-pattern>/tasks/migration</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>BlobDeletionQueueServlet</servlet-name>
+        <servlet-class>com.bibounde.gaemvnrepo.web.queue.BlobDeletionServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>BlobDeletionQueueServlet</servlet-name>
+        <url-pattern>/tasks/delete/blob</url-pattern>
     </servlet-mapping>
     
     <security-constraint>

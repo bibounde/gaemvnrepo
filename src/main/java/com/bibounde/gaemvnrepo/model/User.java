@@ -1,5 +1,7 @@
 package com.bibounde.gaemvnrepo.model;
 
+import java.io.Serializable;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NullValue;
@@ -9,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 //Not supported by GAE @Unique(name="USER_UNIQUE_IDX", members={"login", "email"})
-public class User implements Disposable {
+public class User implements Serializable {
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -35,9 +37,6 @@ public class User implements Disposable {
     
     @Persistent
     private long created;
-    
-    @Persistent
-    private boolean disposable;
     
     public enum Role {
         ADMIN, MANAGER, UPLOADER, USER;
@@ -154,20 +153,4 @@ public class User implements Disposable {
     public void setCreated(long created) {
         this.created = created;
     }
-
-    /**
-     * @return the disposable
-     */
-    public boolean isDisposable() {
-        return disposable;
-    }
-
-    /**
-     * @param disposable the disposable to set
-     */
-    public void setDisposable(boolean disposable) {
-        this.disposable = disposable;
-    }
-    
-    
 }
