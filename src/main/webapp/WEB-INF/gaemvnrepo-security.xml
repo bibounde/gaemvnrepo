@@ -40,7 +40,7 @@
 	    <intercept-url pattern="/tasks/**" access="permitAll" />
 		<intercept-url pattern="/login*" access="permitAll" />
 		<http-basic/>
-		<form-login login-page='/login' authentication-failure-url="/login_error" default-target-url="/admin"/>
+		<form-login login-page='/login' authentication-failure-url="/login?login=failed" default-target-url="/admin"/>
 		<logout invalidate-session="true" logout-success-url="/login"/>
 	</http>
 	

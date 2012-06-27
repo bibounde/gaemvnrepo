@@ -53,7 +53,7 @@ public class StatusBar extends HorizontalLayout implements View {
         this.logout.setStyleName(BaseTheme.BUTTON_LINK);
         this.logout.setIcon(new ExternalResource("/static/icons/logout-16.png"));
         
-        this.caption = new Label("GAE MVN Repository");
+        this.caption = new Label(ConfigurationUtil.INSTANCE.getCaption());
         this.caption.setStyleName("gaemvnrepo-status-bar-caption");
         
         this.version = new Label(Messages.INSTANCE.getString("StatusBar." + ConfigurationUtil.INSTANCE.getApplicationName(), this.getLocale()));

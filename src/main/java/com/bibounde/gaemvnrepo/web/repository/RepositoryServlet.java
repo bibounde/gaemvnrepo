@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import com.bibounde.gaemvnrepo.model.File;
+import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.domain.repository.FileNavigationNode;
 import com.bibounde.gaemvnrepo.shared.exception.BusinessException;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
@@ -122,6 +123,7 @@ public class RepositoryServlet extends AbstractSpringServlet {
         Template template = this.freeMarkerConfiguration.getTemplate("navigation.ftl");
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("items", items);
+        model.put("caption", ConfigurationUtil.INSTANCE.getCaption());
         template.process(model, response.getWriter());
         response.getWriter().flush();
     }

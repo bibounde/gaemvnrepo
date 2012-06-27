@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>GAE MVN Repository</title>
+        <title>${caption}</title>
     </head>
     <body>
         <ul>

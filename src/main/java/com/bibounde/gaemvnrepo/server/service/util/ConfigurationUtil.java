@@ -64,6 +64,10 @@ public enum ConfigurationUtil {
         return Mode.valueOf(this.properties.getProperty("mode").toUpperCase());
     }
     
+    public String getCaption() {
+        return this.properties.getProperty("caption");
+    }
+    
     public enum Mode {
         DEV, PRODUCTION;
     }

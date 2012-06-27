@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.bibounde.gaemvnrepo.i18n.Messages;
+import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.domain.migration.MigrationResponse;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.service.MigrationService;
-import com.google.appengine.api.files.FileService;
 import com.vaadin.Application;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
@@ -46,7 +46,7 @@ public class MigrationApplication extends Application implements HttpServletRequ
     public void init() {
         this.setTheme("gaemvnrepo");
         
-        final Window main = new Window(Messages.INSTANCE.getString("MigrationApplication.title", this.getLocale())); 
+        final Window main = new Window(ConfigurationUtil.INSTANCE.getCaption() + " " + Messages.INSTANCE.getString("MigrationApplication.title", this.getLocale())); 
         setMainWindow(main);
         
         VerticalLayout container = (VerticalLayout) main.getContent();
