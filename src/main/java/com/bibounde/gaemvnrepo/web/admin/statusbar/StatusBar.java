@@ -57,7 +57,13 @@ public class StatusBar extends HorizontalLayout implements View {
         this.caption = new Label(ConfigurationUtil.INSTANCE.getCaption());
         this.caption.setStyleName("gaemvnrepo-status-bar-caption");
         
-        this.version = new Label(ApplicationData.getMessage("StatusBar." + ConfigurationUtil.INSTANCE.getApplicationName()));
+        String versionKey = "StatusBar." + ConfigurationUtil.INSTANCE.getApplicationName();
+        String versionText = ConfigurationUtil.INSTANCE.getApplicationName();
+        if (ApplicationData.messageExists(versionKey)) {
+            versionText = ApplicationData.getMessage(versionKey); 
+        }
+        
+        this.version = new Label(versionText);
         this.version.setStyleName("gaemvnrepo-version");
         this.version.setDescription(ConfigurationUtil.INSTANCE.getApplicationVersion() + " - " + ConfigurationUtil.INSTANCE.getApplicationBuild());
         

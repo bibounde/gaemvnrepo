@@ -49,8 +49,10 @@ public class ApplicationData implements TransactionListener, Serializable {
     
     public static String getMessage(String key) {
         return instance.get().resourceBundle.getString(key);
-        //return ResourceBundleUtil.INSTANCE.getResourceBundle(instance.get().locale).getString(key);
-        //return ResourceBundleUtil.INSTANCE.getString(instance.get(), key);
+    }
+    
+    public static boolean messageExists(String key) {
+        return instance.get().resourceBundle.containsKey(key);
     }
 
 }
