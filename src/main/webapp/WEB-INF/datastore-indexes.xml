@@ -9,10 +9,6 @@
         <property name="path" direction="asc"/>
     </datastore-index>
     
-    <datastore-index kind="File" ancestor="false" source="manual">
-        <property name="path" direction="asc"/>
-    </datastore-index>
-    
     <datastore-index kind="AppliedMigration" ancestor="true" source="manual">
         <property name="appliedMigrations_INTEGER_IDX" direction="asc"/>
     </datastore-index>
