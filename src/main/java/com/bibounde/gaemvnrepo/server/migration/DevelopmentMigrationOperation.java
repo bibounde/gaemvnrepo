@@ -27,11 +27,6 @@ public class DevelopmentMigrationOperation implements MigrationOperation {
     
     @Autowired
     private UserService userService;
-    
-    @Override
-    public String getLocalizedName() {
-        return "$$Applied Migration de dev";
-    }
 
     @Override
     public void run() throws TechnicalException {

@@ -3,7 +3,7 @@ package com.bibounde.gaemvnrepo.web.admin.navigation;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.bibounde.gaemvnrepo.web.admin.navigation.NavigationMenuModel.MenuItem;
 import com.bibounde.gaemvnrepo.web.mvc.ActionEvent;
 import com.bibounde.gaemvnrepo.web.mvc.Controller;
@@ -76,7 +76,7 @@ public class NavigationMenu extends Panel implements View {
             this.links.clear();
             for (int i = 0; i < this.model.getMenuItems().size(); i++) {
                 MenuItem item = this.model.getMenuItems().get(i);
-                Button link = new Button(Messages.INSTANCE.getString("NavigationMenu." + item.name().toLowerCase(), this.getLocale()));
+                Button link = new Button(ApplicationData.getMessage("NavigationMenu." + item.name().toLowerCase()));
                 link.setStyleName(BaseTheme.BUTTON_LINK);
                 link.addListener(this.createSelectionListener(i));
                 this.linkLayout.addComponent(link);

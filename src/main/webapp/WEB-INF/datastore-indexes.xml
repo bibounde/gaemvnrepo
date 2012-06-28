@@ -6,12 +6,10 @@
     
     <datastore-index kind="File" ancestor="false" source="manual">
         <property name="depth" direction="asc"/>
-        <property name="disposable" direction="asc"/>
         <property name="path" direction="asc"/>
     </datastore-index>
     
     <datastore-index kind="File" ancestor="false" source="manual">
-        <property name="disposable" direction="asc"/>
         <property name="path" direction="asc"/>
     </datastore-index>
     

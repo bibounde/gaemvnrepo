@@ -1,6 +1,6 @@
 package com.bibounde.gaemvnrepo.web.admin.detail.profile;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.bibounde.gaemvnrepo.web.admin.detail.HeaderComponent;
 import com.bibounde.gaemvnrepo.web.mvc.Controller;
 import com.bibounde.gaemvnrepo.web.mvc.Model;
@@ -24,7 +24,7 @@ public class ProfileView extends VerticalLayout implements View {
     private void initLayout() {
         this.setSizeFull();
         this.setSpacing(true);
-        this.addComponent(new HeaderComponent(Messages.INSTANCE.getString("ProfileView.title", this.getLocale()), "/static/icons/profile-32.png"));
+        this.addComponent(new HeaderComponent(ApplicationData.getMessage("ProfileView.title"), "/static/icons/profile-32.png"));
     }
     
     @Override

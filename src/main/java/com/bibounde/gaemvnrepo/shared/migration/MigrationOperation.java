@@ -7,6 +7,5 @@ import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 public interface MigrationOperation extends Serializable {
     
     String getName();
-    String getLocalizedName();
     void run() throws TechnicalException;
 }

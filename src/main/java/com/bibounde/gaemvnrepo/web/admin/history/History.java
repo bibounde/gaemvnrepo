@@ -1,6 +1,5 @@
 package com.bibounde.gaemvnrepo.web.admin.history;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.Gson;

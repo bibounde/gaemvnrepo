@@ -6,11 +6,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.domain.migration.MigrationResponse;
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.service.MigrationService;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.vaadin.Application;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
@@ -40,13 +40,18 @@ public class MigrationApplication extends Application implements HttpServletRequ
     private Label statusLabel;
     private NativeButton performButton;
     private Link adminLink;
+    private String pauseMessage, successMessage, resumeMessage;
     
     
     @Override
     public void init() {
         this.setTheme("gaemvnrepo");
         
-        final Window main = new Window(ConfigurationUtil.INSTANCE.getCaption() + " " + Messages.INSTANCE.getString("MigrationApplication.title", this.getLocale())); 
+        ApplicationData sessionData = new ApplicationData(this);
+        this.getContext().addTransactionListener(sessionData);
+        ApplicationData.initLocale(getLocale());
+        
+        final Window main = new Window(ConfigurationUtil.INSTANCE.getCaption() + " " + ApplicationData.getMessage("MigrationApplication.title")); 
         setMainWindow(main);
         
         VerticalLayout container = (VerticalLayout) main.getContent();
@@ -64,7 +69,7 @@ public class MigrationApplication extends Application implements HttpServletRequ
         container.setExpandRatio(panel, 1.0f);
         container.setComponentAlignment(panel, Alignment.MIDDLE_CENTER);
         
-        Label caption = new Label(Messages.INSTANCE.getString("MigrationApplication.subtitle", this.getLocale()));
+        Label caption = new Label(ApplicationData.getMessage("MigrationApplication.subtitle"));
         caption.setSizeUndefined();
         caption.setStyleName("gaemvnrepo-status-bar-caption");
         panel.addComponent(caption);
@@ -86,7 +91,7 @@ public class MigrationApplication extends Application implements HttpServletRequ
         statusLayout.addComponent(this.progressIndicator);
         statusLayout.setComponentAlignment(this.progressIndicator, Alignment.MIDDLE_RIGHT);
         
-        this.performButton = new NativeButton(Messages.INSTANCE.getString("MigrationApplication.migrate", this.getLocale()));
+        this.performButton = new NativeButton(ApplicationData.getMessage("MigrationApplication.migrate"));
         statusLayout.addComponent(performButton);
         
         performButton.addListener(new ClickListener() {
@@ -109,12 +114,16 @@ public class MigrationApplication extends Application implements HttpServletRequ
         panel.addComponent(this.statusLabel);
         ((VerticalLayout) panel.getContent()).setComponentAlignment(this.statusLabel, Alignment.TOP_CENTER);
         
-        this.adminLink = new Link(Messages.INSTANCE.getString("MigrationApplication.page.administration", this.getLocale()) + " \u00bb", new ExternalResource("/admin"));
+        this.adminLink = new Link(ApplicationData.getMessage("MigrationApplication.page.administration") + " \u00bb", new ExternalResource("/admin"));
         this.adminLink.setVisible(false);
         panel.addComponent(this.adminLink);
         ((VerticalLayout) panel.getContent()).setComponentAlignment(this.adminLink, Alignment.BOTTOM_RIGHT);
         ((VerticalLayout) panel.getContent()).setExpandRatio(this.adminLink, 1.0f);
         
+        //Sets message to avoid NPE in request start
+        this.successMessage = ApplicationData.getMessage("MigrationApplication.done");
+        this.pauseMessage = ApplicationData.getMessage("MigrationApplication.paused");
+        this.resumeMessage = ApplicationData.getMessage("MigrationApplication.resume");
     }
 
     @Override
@@ -130,7 +139,7 @@ public class MigrationApplication extends Application implements HttpServletRequ
                     this.statusIcon.setSource(new ExternalResource("/static/icons/accept-16.png"));
                     this.statusIcon.setVisible(true);
                     
-                    this.statusLabel.setValue(Messages.INSTANCE.getString("MigrationApplication.done", this.getLocale()));
+                    this.statusLabel.setValue(successMessage);
                     this.statusLabel.addStyleName("gaemvnrepo-notification-success");
                     this.statusLabel.removeStyleName("gaemvnrepo-notification-warning");
                     
@@ -143,12 +152,12 @@ public class MigrationApplication extends Application implements HttpServletRequ
                     this.statusIcon.setSource(new ExternalResource("/static/icons/warning-16.png"));
                     this.statusIcon.setVisible(true);
                     
-                    this.statusLabel.setValue(Messages.INSTANCE.getString("MigrationApplication.paused", this.getLocale()));
+                    this.statusLabel.setValue(pauseMessage);
                     this.statusLabel.addStyleName("gaemvnrepo-notification-warning");
                     this.statusLabel.removeStyleName("gaemvnrepo-notification-success");
                     
                     this.performButton.setEnabled(true);
-                    this.performButton.setCaption(Messages.INSTANCE.getString("MigrationApplication.resume", this.getLocale()));
+                    this.performButton.setCaption(resumeMessage);
                     this.adminLink.setVisible(false);
                     break;
                 default:

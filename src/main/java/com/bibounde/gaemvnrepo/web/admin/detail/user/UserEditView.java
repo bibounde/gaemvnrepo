@@ -2,10 +2,11 @@ package com.bibounde.gaemvnrepo.web.admin.detail.user;
 
 import java.util.Arrays;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.shared.domain.Role;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditResponse;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
+import com.bibounde.gaemvnrepo.web.ResourceBundleUtil;
 import com.bibounde.gaemvnrepo.web.admin.detail.HeaderComponent;
 import com.bibounde.gaemvnrepo.web.admin.tools.ConfirmationDialogUtil;
 import com.bibounde.gaemvnrepo.web.admin.tools.ConfirmationDialogUtil.ConfirmationDialogListener;
@@ -35,7 +36,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.PasswordField;
-import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.BaseTheme;
@@ -64,7 +64,7 @@ public class UserEditView extends VerticalLayout implements View {
         this.model.addModelEventListener(this);
         
         this.profileForm = new Form();
-        this.profileForm.setCaption(Messages.INSTANCE.getString("UserEditView.profile", this.getLocale()));
+        this.profileForm.setCaption(ApplicationData.getMessage("UserEditView.profile"));
         this.profileForm.setFormFieldFactory(new ProfileFieldFactory());
         this.userProfileFormData = new UserEditProfileData();
         BeanItem<UserEditProfileData> personItem = new BeanItem<UserEditProfileData>(this.userProfileFormData);
@@ -73,13 +73,13 @@ public class UserEditView extends VerticalLayout implements View {
         
         this.profileForm.setVisibleItemProperties(Arrays.asList(new String[] {
                 UserEditProfileData.LOGIN_PROPERTY, UserEditProfileData.EMAIL_PROPERTY, UserEditProfileData.LOCALE_PROPERTY, UserEditProfileData.ROLE_PROPERTY,}));
-        this.profileForm.getField(UserEditProfileData.LOGIN_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.login", this.getLocale()));
-        this.profileForm.getField(UserEditProfileData.EMAIL_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.email", this.getLocale()));
-        this.profileForm.getField(UserEditProfileData.LOCALE_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.lang", this.getLocale()));
-        this.profileForm.getField(UserEditProfileData.ROLE_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.role", this.getLocale()));
+        this.profileForm.getField(UserEditProfileData.LOGIN_PROPERTY).setCaption(ApplicationData.getMessage("UserEditView.login"));
+        this.profileForm.getField(UserEditProfileData.EMAIL_PROPERTY).setCaption(ApplicationData.getMessage("UserEditView.email"));
+        this.profileForm.getField(UserEditProfileData.LOCALE_PROPERTY).setCaption(ApplicationData.getMessage("UserEditView.lang"));
+        this.profileForm.getField(UserEditProfileData.ROLE_PROPERTY).setCaption(ApplicationData.getMessage("UserEditView.role"));
         
         this.authenticationForm = new Form();
-        this.authenticationForm.setCaption(Messages.INSTANCE.getString("UserEditView.authentication", this.getLocale()));
+        this.authenticationForm.setCaption(ApplicationData.getMessage("UserEditView.authentication"));
         this.authenticationForm.setFormFieldFactory(new AuthFieldFactory());
         this.userAuthData = new UsereditAuthData();
         BeanItem<UsereditAuthData> userAuthItem = new BeanItem<UsereditAuthData>(this.userAuthData);
@@ -88,10 +88,10 @@ public class UserEditView extends VerticalLayout implements View {
         
         this.authenticationForm.setVisibleItemProperties(Arrays.asList(new String[] {
                 UsereditAuthData.PASSWORD_PROPERTY, UsereditAuthData.REPASSWORD_PROPERTY}));
-        this.authenticationForm.getField(UsereditAuthData.PASSWORD_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.password", this.getLocale()));
-        this.authenticationForm.getField(UsereditAuthData.REPASSWORD_PROPERTY).setCaption(Messages.INSTANCE.getString("UserEditView.confirmation", getLocale()));
+        this.authenticationForm.getField(UsereditAuthData.PASSWORD_PROPERTY).setCaption(ApplicationData.getMessage("UserEditView.password"));
+        this.authenticationForm.getField(UsereditAuthData.REPASSWORD_PROPERTY).setCaption(ApplicationData.getMessage("UserEditView.confirmation"));
         
-        this.saveButton = new NativeButton(Messages.INSTANCE.getString("UserEditView.save", getLocale()));
+        this.saveButton = new NativeButton(ApplicationData.getMessage("UserEditView.save"));
         this.saveButton.addListener(new ClickListener() {
             
             @Override
@@ -119,7 +119,7 @@ public class UserEditView extends VerticalLayout implements View {
             }
         });
         
-        this.deleteButton = new Button(Messages.INSTANCE.getString("UserEditView.delete", getLocale()));
+        this.deleteButton = new Button(ApplicationData.getMessage("UserEditView.delete"));
         this.deleteButton.setStyleName(BaseTheme.BUTTON_LINK);
         this.deleteButton.setIcon(new ExternalResource("/static/icons/trash-16.png"));
         this.deleteButton.addListener(new ClickListener() {
@@ -133,7 +133,7 @@ public class UserEditView extends VerticalLayout implements View {
                         controller.actionPerformed(actionEvent);
                     }
                 };
-                ConfirmationDialogUtil.showConfirmationDialog(getWindow(), Messages.INSTANCE.getString("UserEditView.delete.action", getLocale()), Messages.INSTANCE.getString("UserEditView.delete.message", getLocale()), confirmationListener);
+                ConfirmationDialogUtil.showConfirmationDialog(getWindow(), ApplicationData.getMessage("UserEditView.delete.action"), ApplicationData.getMessage("UserEditView.delete.message"), confirmationListener);
             }
         });
         
@@ -211,14 +211,14 @@ public class UserEditView extends VerticalLayout implements View {
             this.activationButton.setVisible(true);
             
             if (this.model.getUser().active) {
-                this.activationButton.setCaption(Messages.INSTANCE.getString("UserEditView.lock", getLocale()));
+                this.activationButton.setCaption(ApplicationData.getMessage("UserEditView.lock"));
                 this.activationButton.setIcon(new ExternalResource("/static/icons/locked-16.png"));
             } else {
-                this.activationButton.setCaption(Messages.INSTANCE.getString("UserEditView.unlock", getLocale()));
+                this.activationButton.setCaption(ApplicationData.getMessage("UserEditView.unlock"));
                 this.activationButton.setIcon(new ExternalResource("/static/icons/unlocked-16.png"));
             }
             
-            this.header.setTitle(Messages.INSTANCE.getString("UserEditView.title", this.getLocale()) + " \u00bb " + user.login);
+            this.header.setTitle(ApplicationData.getMessage("UserEditView.title") + " \u00bb " + user.login);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.ROLE_PROPERTY).setValue(user.role);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.EMAIL_PROPERTY).setValue(user.email);
             this.profileForm.getItemDataSource().getItemProperty(UserEditProfileData.LOCALE_PROPERTY).setValue(user.locale);
@@ -232,11 +232,11 @@ public class UserEditView extends VerticalLayout implements View {
             this.authenticationForm.getItemDataSource().getItemProperty(UsereditAuthData.REPASSWORD_PROPERTY).setValue("");
             
             if (UserEditModel.USER_SAVED.equals(event.getType())) {
-                this.setStatus(true, Messages.INSTANCE.getString("UserEditView.usersaved", getLocale()));
+                this.setStatus(true, ApplicationData.getMessage("UserEditView.usersaved"));
             }
         } else {
             
-            this.header.setTitle(Messages.INSTANCE.getString("UserEditView.title.new", this.getLocale()));
+            this.header.setTitle(ApplicationData.getMessage("UserEditView.title.new"));
             this.deleteButton.setVisible(false);
             this.activationButton.setVisible(false);
             
@@ -280,28 +280,28 @@ public class UserEditView extends VerticalLayout implements View {
      * Show saving error in detail view
      */
     public void showSavingError() {
-        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.save.error", this.getLocale()));
+        this.setStatus(false, ApplicationData.getMessage("UserEditView.save.error"));
     }
     
     /**
      * Show deletion error in detail view
      */
     public void showDeleteError() {
-        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.delete.error", this.getLocale()));
+        this.setStatus(false, ApplicationData.getMessage("UserEditView.delete.error"));
     }
     
     /**
      * Show lock error in detail view
      */
     public void showLockError() {
-        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.lock.error", this.getLocale()));
+        this.setStatus(false, ApplicationData.getMessage("UserEditView.lock.error"));
     }
     
     /**
      * Show unlock error in detail view
      */
     public void showUnlockError() {
-        this.setStatus(false, Messages.INSTANCE.getString("UserEditView.lock.error", this.getLocale()));
+        this.setStatus(false, ApplicationData.getMessage("UserEditView.lock.error"));
     }
 
     @Override
@@ -327,23 +327,23 @@ public class UserEditView extends VerticalLayout implements View {
             this.localeSelect = new NativeSelect();
             this.localeSelect.addStyleName("gaemvnrepo-form-input");
             this.localeSelect.setRequired(true);
-            this.localeSelect.setRequiredError(Messages.INSTANCE.getString("UserEditView.required.lang", getLocale()));
-            for (String lang : Messages.INSTANCE.getSupportedLanguages()) {
+            this.localeSelect.setRequiredError(ApplicationData.getMessage("UserEditView.required.lang"));
+            for (String lang : ResourceBundleUtil.INSTANCE.getSupportedLanguages()) {
                 this.localeSelect.addItem(lang);
             }
             this.roleSelect = new NativeSelect();
             this.roleSelect.addStyleName("gaemvnrepo-form-input");
             this.roleSelect.setRequired(true);
-            this.roleSelect.setRequiredError(Messages.INSTANCE.getString("UserEditView.required.role", getLocale()));
+            this.roleSelect.setRequiredError(ApplicationData.getMessage("UserEditView.required.role"));
             
             this.roleSelect.addItem(Role.USER);
-            this.roleSelect.setItemCaption(Role.USER, Messages.INSTANCE.getString("UserEditView.role.user", getLocale()));
+            this.roleSelect.setItemCaption(Role.USER, ApplicationData.getMessage("UserEditView.role.user"));
             this.roleSelect.addItem(Role.UPLOADER);
-            this.roleSelect.setItemCaption(Role.UPLOADER, Messages.INSTANCE.getString("UserEditView.role.uploader", getLocale()));
+            this.roleSelect.setItemCaption(Role.UPLOADER, ApplicationData.getMessage("UserEditView.role.uploader"));
             this.roleSelect.addItem(Role.MANAGER);
-            this.roleSelect.setItemCaption(Role.MANAGER, Messages.INSTANCE.getString("UserEditView.role.manager", getLocale()));
+            this.roleSelect.setItemCaption(Role.MANAGER, ApplicationData.getMessage("UserEditView.role.manager"));
             this.roleSelect.addItem(Role.ADMIN);
-            this.roleSelect.setItemCaption(Role.ADMIN, Messages.INSTANCE.getString("UserEditView.role.administrator", getLocale()));
+            this.roleSelect.setItemCaption(Role.ADMIN, ApplicationData.getMessage("UserEditView.role.administrator"));
         }
         
         @Override
@@ -363,14 +363,14 @@ public class UserEditView extends VerticalLayout implements View {
             if (UserEditProfileData.LOGIN_PROPERTY.equals(propertyId)) {
                 TextField tf = (TextField) f; 
                 tf.setRequired(true);
-                tf.setRequiredError(Messages.INSTANCE.getString("UserEditView.required.login", getLocale()));
+                tf.setRequiredError(ApplicationData.getMessage("UserEditView.required.login"));
                 tf.addValidator(new StringLengthValidator(
-                        Messages.INSTANCE.getString("UserEditView.invalid.login", getLocale()), 3, 25, false));
+                        ApplicationData.getMessage("UserEditView.invalid.login"), 3, 25, false));
             } else if (UserEditProfileData.EMAIL_PROPERTY.equals(propertyId)) {
                 TextField tf = (TextField) f; 
                 tf.setRequired(true);
-                tf.setRequiredError(Messages.INSTANCE.getString("UserEditView.required.email", getLocale()));
-                tf.addValidator(new EmailValidator(Messages.INSTANCE.getString("UserEditView.invalid.email", getLocale())));
+                tf.setRequiredError(ApplicationData.getMessage("UserEditView.required.email"));
+                tf.addValidator(new EmailValidator(ApplicationData.getMessage("UserEditView.invalid.email")));
             }
 
             return f;
@@ -385,20 +385,20 @@ public class UserEditView extends VerticalLayout implements View {
             this.password = new PasswordField();
             this.password.addStyleName("gaemvnrepo-form-input");
             this.password.setRequired(true);
-            this.password.setRequiredError(Messages.INSTANCE.getString("UserEditView.required.password", getLocale()));
+            this.password.setRequiredError(ApplicationData.getMessage("UserEditView.required.password"));
             this.password.addValidator(new StringLengthValidator(
-                    Messages.INSTANCE.getString("UserEditView.invalid.password", getLocale()), 3, 25, false));
+                    ApplicationData.getMessage("UserEditView.invalid.password"), 3, 25, false));
             
             this.rePassword = new PasswordField();
             this.rePassword.addStyleName("gaemvnrepo-form-input");
             this.rePassword.setRequired(true);
-            this.rePassword.setRequiredError(Messages.INSTANCE.getString("UserEditView.required.confirmation", getLocale()));
+            this.rePassword.setRequiredError(ApplicationData.getMessage("UserEditView.required.confirmation"));
             this.rePassword.addValidator(new Validator(){
 
                 @Override
                 public void validate(Object value) throws InvalidValueException {
                     if (!this.isValid(value)) {
-                        throw new InvalidValueException(Messages.INSTANCE.getString("UserEditView.invalid.confirmation", getLocale()));
+                        throw new InvalidValueException(ApplicationData.getMessage("UserEditView.invalid.confirmation"));
                     }
                 }
 

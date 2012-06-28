@@ -2,7 +2,6 @@ package com.bibounde.gaemvnrepo.model;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;

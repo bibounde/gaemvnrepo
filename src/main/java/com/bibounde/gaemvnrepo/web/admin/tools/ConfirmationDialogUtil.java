@@ -2,11 +2,11 @@ package com.bibounde.gaemvnrepo.web.admin.tools;
 
 import java.io.Serializable;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.vaadin.terminal.ExternalResource;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -57,7 +57,7 @@ public class ConfirmationDialogUtil {
         buttonLayout.setSpacing(true);
         buttonLayout.setWidth(100, HorizontalLayout.UNITS_PERCENTAGE);
         
-        NativeButton yesButton = new NativeButton(Messages.INSTANCE.getString("ConfirmationDialogUtil.yes", layout.getLocale()));
+        NativeButton yesButton = new NativeButton(ApplicationData.getMessage("ConfirmationDialogUtil.yes"));
         buttonLayout.addComponent(yesButton);
         buttonLayout.setExpandRatio(yesButton, 1.0f);
         buttonLayout.setComponentAlignment(yesButton, Alignment.BOTTOM_RIGHT);
@@ -71,7 +71,7 @@ public class ConfirmationDialogUtil {
             }
         });
         
-        NativeButton noButton = new NativeButton(Messages.INSTANCE.getString("ConfirmationDialogUtil.no", layout.getLocale()));
+        NativeButton noButton = new NativeButton(ApplicationData.getMessage("ConfirmationDialogUtil.no"));
         buttonLayout.addComponent(noButton);
         buttonLayout.setComponentAlignment(noButton, Alignment.BOTTOM_RIGHT);
         noButton.addListener(new ClickListener() {

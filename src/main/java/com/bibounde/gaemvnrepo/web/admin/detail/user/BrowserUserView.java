@@ -3,10 +3,10 @@ package com.bibounde.gaemvnrepo.web.admin.detail.user;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListItem;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListResponse;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserSort;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.bibounde.gaemvnrepo.web.admin.detail.HeaderComponent;
 import com.bibounde.gaemvnrepo.web.admin.pagination.PaginatedTable;
 import com.bibounde.gaemvnrepo.web.admin.pagination.PaginationBar;
@@ -19,7 +19,6 @@ import com.bibounde.gaemvnrepo.web.mvc.View;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.event.Action;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Embedded;
@@ -90,11 +89,11 @@ public class BrowserUserView extends VerticalLayout implements View, PaginationL
         this.table.addGeneratedColumn(TABLE_ADMINISTRATOR_PROPERTY, this.createAdministratorColumnGenerator());
         this.table.addGeneratedColumn(TABLE_LOCKED_PROPERTY, this.createActiveColumnGenerator());
 
-        this.table.setColumnHeaders(new String[] {Messages.INSTANCE.getString("BrowserUserView.login", this.getLocale()),
-                Messages.INSTANCE.getString("BrowserUserView.email", this.getLocale()),
-                Messages.INSTANCE.getString("BrowserUserView.administrator", this.getLocale()),
-                Messages.INSTANCE.getString("BrowserUserView.locked", this.getLocale()),
-                Messages.INSTANCE.getString("BrowserUserView.created", this.getLocale())});
+        this.table.setColumnHeaders(new String[] {ApplicationData.getMessage("BrowserUserView.login"),
+                ApplicationData.getMessage("BrowserUserView.email"),
+                ApplicationData.getMessage("BrowserUserView.administrator"),
+                ApplicationData.getMessage("BrowserUserView.locked"),
+                ApplicationData.getMessage("BrowserUserView.created")});
         
         this.table.setImmediate(true);
         this.table.addListener(new Property.ValueChangeListener() {
@@ -115,7 +114,7 @@ public class BrowserUserView extends VerticalLayout implements View, PaginationL
     private void initLayout() {
         this.setSizeFull();
         this.setSpacing(true);
-        this.addComponent(new HeaderComponent(Messages.INSTANCE.getString("BrowserUserView.title", this.getLocale()), "/static/icons/browse-user-32.png"));
+        this.addComponent(new HeaderComponent(ApplicationData.getMessage("BrowserUserView.title"), "/static/icons/browse-user-32.png"));
 
         this.addComponent(this.table);
         this.setExpandRatio(this.table, 1.0f);

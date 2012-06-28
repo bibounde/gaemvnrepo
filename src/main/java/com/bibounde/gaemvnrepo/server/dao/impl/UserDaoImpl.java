@@ -22,8 +22,8 @@ public class UserDaoImpl implements UserDao {
                 throw new IllegalArgumentException("User login is invalid. Login length must be between 3 and 25");
             }
             
-            this.checkUniqueContstaint("login", user.getLogin(), pm);
-            this.checkUniqueContstaint("email", user.getEmail(), pm);
+            this.checkUniqueContstaint(user, "login", user.getLogin(), pm);
+            this.checkUniqueContstaint(user, "email", user.getEmail(), pm);
 
             user.setCreated(System.currentTimeMillis());
             return pm.makePersistent(user);
@@ -162,20 +162,28 @@ public class UserDaoImpl implements UserDao {
      * Checks unique constraint (due to GAE limitation one method per property - OR is not supported for
      * multiple properties)
      * 
+     * @param currentUser current modifed
      * @param propterty property to check
      * @param value property value
      * @param pm
      * @throws TechnicalException
      */
-    private void checkUniqueContstaint(String property, String value, PersistenceManager pm) throws TechnicalException {
+    private void checkUniqueContstaint(User currentUser, String property, String value, PersistenceManager pm) throws TechnicalException {
         Query query = null;
         try {
             query = pm.newQuery(User.class);
-            query.setFilter("(" + property + " == param)");
-            query.declareParameters("String param");
+            StringBuilder filter = new StringBuilder(property);
+            filter.append(" == propertyParam");            
+            if (currentUser.getId() != null) {
+                filter.append(" && id != idParam");
+            }
+            query.setFilter(filter.toString());
+            query.setResult("count(this)");
+            query.declareParameters("String propertyParam, Long idParam");
 
-            List<User> users = (List<User>) query.execute(value);
-            if (users.size() > 0) {
+            int count = (Integer) query.execute(value, currentUser.getId());
+            
+            if (count > 0) {
                 throw new IllegalStateException("Unique constraint violation on " + property + " property");
             }
         } catch (Exception e) {

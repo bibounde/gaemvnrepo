@@ -1,11 +1,5 @@
 package com.bibounde.gaemvnrepo.web.admin.detail;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import com.bibounde.gaemvnrepo.i18n.Messages;
-import com.vaadin.data.Property;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 

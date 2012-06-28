@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
 import com.bibounde.gaemvnrepo.shared.domain.Role;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
@@ -24,6 +23,7 @@ import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 import com.bibounde.gaemvnrepo.shared.history.Historizable;
 import com.bibounde.gaemvnrepo.shared.service.RepositoryService;
 import com.bibounde.gaemvnrepo.shared.service.UserService;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.bibounde.gaemvnrepo.web.admin.detail.profile.ProfileView;
 import com.bibounde.gaemvnrepo.web.admin.detail.repository.BrowserRepositoryView;
 import com.bibounde.gaemvnrepo.web.admin.detail.repository.BrowserRepositoryViewHelper;
@@ -84,13 +84,15 @@ public class AdminApplication extends Application implements Controller, History
         
         try {
             AuthenticatedUserInfo userInfo = this.userService.getAuthenticatedUserInfo();
-
-            this.setLocale(userInfo.locale);
-
+            
+            ApplicationData sessionData = new ApplicationData(this);
+            this.getContext().addTransactionListener(sessionData);
+            ApplicationData.initLocale(userInfo.locale);
+            
             this.mainPage = new MainPage(this);
             mainPage.setSizeFull();
 
-            this.window = new Window(Messages.INSTANCE.getString("AdminApplication.title", userInfo.locale));
+            this.window = new Window(ConfigurationUtil.INSTANCE.getCaption() + " " + ApplicationData.getMessage("AdminApplication.title"));
             ((VerticalLayout) window.getContent()).setMargin(false);
             ((VerticalLayout) window.getContent()).setSizeFull();
 
@@ -410,11 +412,11 @@ public class AdminApplication extends Application implements Controller, History
     private void notifyError(Exception e) {
         String title = null;
         if (e instanceof TechnicalException) {
-            title = Messages.INSTANCE.getString("AdminApplication.technicalerror", this.getLocale());
+            title = ApplicationData.getMessage("AdminApplication.technicalerror");
         } else if (e instanceof BusinessException) {
-            title = Messages.INSTANCE.getString("AdminApplication.businesserror", this.getLocale());;
+            title = ApplicationData.getMessage("AdminApplication.businesserror");;
         } else {
-            title = Messages.INSTANCE.getString("AdminApplication.unexpectederror", this.getLocale());;
+            title = ApplicationData.getMessage("AdminApplication.unexpectederror");;
         }
         this.window.showNotification(title, e.getMessage(), Notification.TYPE_ERROR_MESSAGE);
     }

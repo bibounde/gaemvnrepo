@@ -1,13 +1,11 @@
 package com.bibounde.gaemvnrepo.shared.service;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.bibounde.gaemvnrepo.model.User;
 import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
-import com.bibounde.gaemvnrepo.shared.domain.repository.RepositoryNavigationNode;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditQuery;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserEditResponse;
 import com.bibounde.gaemvnrepo.shared.domain.user.UserListQuery;

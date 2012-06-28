@@ -30,11 +30,6 @@ public class InitMigrationOperation implements MigrationOperation {
     }
 
     @Override
-    public String getLocalizedName() {
-        return "$$Initialization";
-    }
-
-    @Override
     public void run() throws TechnicalException {
         userService.createUserAdmin();
         logger.info("User admin created");
@@ -42,6 +37,8 @@ public class InitMigrationOperation implements MigrationOperation {
         repositoryService.createRepository("snapshots", true);
         logger.info("Repository snapshots created");
 
+        repositoryService.createRepository("releases", false);
+        logger.info("Repository releases created");
     }
 
 }

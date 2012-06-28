@@ -1,20 +1,16 @@
 package com.bibounde.gaemvnrepo.web.login;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.vaadin.Application;
-import com.vaadin.terminal.DownloadStream;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.terminal.ParameterHandler;
-import com.vaadin.terminal.URIHandler;
 import com.vaadin.terminal.gwt.server.WebApplicationContext;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.HorizontalLayout;
@@ -39,7 +35,11 @@ public class LoginApplication extends Application {
     public void init() {
         this.setTheme("gaemvnrepo");
         
-        final Window main = new Window(ConfigurationUtil.INSTANCE.getCaption() + " " + Messages.INSTANCE.getString("LoginApplication.title", getLocale())); 
+        ApplicationData sessionData = new ApplicationData(this);
+        this.getContext().addTransactionListener(sessionData);
+        ApplicationData.initLocale(getLocale());
+        
+        final Window main = new Window(ConfigurationUtil.INSTANCE.getCaption() + " " + ApplicationData.getMessage("LoginApplication.title")); 
         setMainWindow(main);
         
         VerticalLayout container = (VerticalLayout) main.getContent();
@@ -75,7 +75,7 @@ public class LoginApplication extends Application {
         captionLayout.setExpandRatio(caption, 1.0f);
         captionLayout.setComponentAlignment(caption, Alignment.MIDDLE_CENTER);
         
-        this.loginFailedLabel = new Label(Messages.INSTANCE.getString("LoginApplication.login.failed", getLocale()));
+        this.loginFailedLabel = new Label(ApplicationData.getMessage("LoginApplication.login.failed"));
         this.loginFailedLabel.setVisible(false);
         this.loginFailedLabel.addStyleName("gaemvnrepo-notification-error");
         panel.addComponent(this.loginFailedLabel);
@@ -84,6 +84,11 @@ public class LoginApplication extends Application {
 
             @Override
             protected byte[] getLoginHTML() {
+                
+                ApplicationData sessionData = new ApplicationData(this.getApplication());
+                this.getApplication().getContext().addTransactionListener(sessionData);
+                ApplicationData.initLocale(getLocale());
+                
                 try {
                     Configuration freemarkerConfiguration = new Configuration();
                     freemarkerConfiguration.setServletContextForTemplateLoading(((WebApplicationContext) getContext()).getHttpSession().getServletContext(), "WEB-INF/templates");
@@ -91,9 +96,9 @@ public class LoginApplication extends Application {
                     
                     Template template = freemarkerConfiguration.getTemplate("login.ftl");
                     Map<String, Object> model = new HashMap<String, Object>();
-                    model.put("labellogin", Messages.INSTANCE.getString("LoginApplication.login", getLocale()) + ":");
-                    model.put("labelpassword", Messages.INSTANCE.getString("LoginApplication.password", getLocale()) + ":");
-                    model.put("labelsubmit", Messages.INSTANCE.getString("LoginApplication.submit", getLocale()));
+                    model.put("labellogin", ApplicationData.getMessage("LoginApplication.login") + ":");
+                    model.put("labelpassword", ApplicationData.getMessage("LoginApplication.password") + ":");
+                    model.put("labelsubmit", ApplicationData.getMessage("LoginApplication.submit"));
                     StringWriter writer = new StringWriter();
                     template.process(model, writer);
                     writer.flush();

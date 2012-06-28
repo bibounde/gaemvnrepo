@@ -1,7 +1,6 @@
 package com.bibounde.gaemvnrepo.shared.service;
 
 import java.io.Serializable;
-import java.util.List;
 
 import com.bibounde.gaemvnrepo.shared.exception.TechnicalException;
 

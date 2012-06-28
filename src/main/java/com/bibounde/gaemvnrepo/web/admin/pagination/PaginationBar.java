@@ -3,7 +3,7 @@ package com.bibounde.gaemvnrepo.web.admin.pagination;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -38,7 +38,7 @@ public class PaginationBar extends HorizontalLayout{
         
         int nbPages = (total / pageSize) + (total % pageSize != 0 ? 1 : 0);
         if (currentPage > 0) {
-            Button previous = new Button("\u00ab " + Messages.INSTANCE.getString("PaginationBar.previous", this.getLocale()));
+            Button previous = new Button("\u00ab " + ApplicationData.getMessage("PaginationBar.previous"));
             previous.setStyleName(BaseTheme.BUTTON_LINK);
             previous.addStyleName("gaemvnrepo-pagination-link");
             previous.addListener(this.createClickListener(currentPage -1));
@@ -59,7 +59,7 @@ public class PaginationBar extends HorizontalLayout{
             this.setComponentAlignment(page, Alignment.MIDDLE_CENTER);
         }
         if (currentPage < nbPages - 1) {
-            Button next = new Button(Messages.INSTANCE.getString("PaginationBar.next", this.getLocale()) + " \u00bb");
+            Button next = new Button(ApplicationData.getMessage("PaginationBar.next") + " \u00bb");
             next.addStyleName(BaseTheme.BUTTON_LINK);
             next.addStyleName("gaemvnrepo-pagination-link");
             next.addListener(this.createClickListener(currentPage + 1));

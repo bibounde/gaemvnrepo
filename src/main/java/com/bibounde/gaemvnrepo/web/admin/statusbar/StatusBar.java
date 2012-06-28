@@ -1,7 +1,8 @@
 package com.bibounde.gaemvnrepo.web.admin.statusbar;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.server.service.util.ConfigurationUtil;
+import com.bibounde.gaemvnrepo.shared.domain.authentication.AuthenticatedUserInfo;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.bibounde.gaemvnrepo.web.mvc.ActionEvent;
 import com.bibounde.gaemvnrepo.web.mvc.Controller;
 import com.bibounde.gaemvnrepo.web.mvc.Model;
@@ -49,14 +50,14 @@ public class StatusBar extends HorizontalLayout implements View {
         this.login.addStyleName("gaemvnrepo-status-bar-label");
         
         this.logout = new Button();
-        this.logout.setDescription(Messages.INSTANCE.getString("StatusBar.logout", this.getLocale()));
+        this.logout.setDescription(ApplicationData.getMessage("StatusBar.logout"));
         this.logout.setStyleName(BaseTheme.BUTTON_LINK);
         this.logout.setIcon(new ExternalResource("/static/icons/logout-16.png"));
         
         this.caption = new Label(ConfigurationUtil.INSTANCE.getCaption());
         this.caption.setStyleName("gaemvnrepo-status-bar-caption");
         
-        this.version = new Label(Messages.INSTANCE.getString("StatusBar." + ConfigurationUtil.INSTANCE.getApplicationName(), this.getLocale()));
+        this.version = new Label(ApplicationData.getMessage("StatusBar." + ConfigurationUtil.INSTANCE.getApplicationName()));
         this.version.setStyleName("gaemvnrepo-version");
         this.version.setDescription(ConfigurationUtil.INSTANCE.getApplicationVersion() + " - " + ConfigurationUtil.INSTANCE.getApplicationBuild());
         

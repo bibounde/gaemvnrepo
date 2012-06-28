@@ -1,9 +1,9 @@
 package com.bibounde.gaemvnrepo.web.admin.detail.repository;
 
-import com.bibounde.gaemvnrepo.i18n.Messages;
 import com.bibounde.gaemvnrepo.shared.domain.repository.FileNavigationNode;
 import com.bibounde.gaemvnrepo.shared.domain.repository.NavigationNode;
 import com.bibounde.gaemvnrepo.shared.domain.repository.RepositoryNavigationNode;
+import com.bibounde.gaemvnrepo.web.ApplicationData;
 import com.bibounde.gaemvnrepo.web.admin.detail.HeaderComponent;
 import com.bibounde.gaemvnrepo.web.admin.tools.ConfirmationDialogUtil;
 import com.bibounde.gaemvnrepo.web.admin.tools.ConfirmationDialogUtil.ConfirmationDialogListener;
@@ -16,12 +16,12 @@ import com.vaadin.event.Action;
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Tree;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Tree.ExpandEvent;
 import com.vaadin.ui.Tree.ExpandListener;
 import com.vaadin.ui.VerticalLayout;
@@ -58,9 +58,9 @@ public class BrowserRepositoryView extends VerticalLayout implements View, Actio
         });
         this.tree.addActionHandler(this);
 
-        this.deleteAction = new Action(Messages.INSTANCE.getString("BrowserRepositoryView.delete", this.getLocale()), new ExternalResource("/static/icons/delete-16.png"));
+        this.deleteAction = new Action(ApplicationData.getMessage("BrowserRepositoryView.delete"), new ExternalResource("/static/icons/delete-16.png"));
         
-        this.refreshButton = new Button(Messages.INSTANCE.getString("BrowserRepositoryView.refresh", getLocale()));
+        this.refreshButton = new Button(ApplicationData.getMessage("BrowserRepositoryView.refresh"));
         this.refreshButton.setStyleName(BaseTheme.BUTTON_LINK);
         this.refreshButton.setIcon(new ExternalResource("/static/icons/refresh-16.png"));
         this.refreshButton.addListener(new ClickListener() {
@@ -82,7 +82,7 @@ public class BrowserRepositoryView extends VerticalLayout implements View, Actio
     private void initLayout() {
         this.setSizeFull();
         this.setSpacing(true);
-        this.addComponent(new HeaderComponent(Messages.INSTANCE.getString("BrowserRepositoryView.title", this.getLocale()), "/static/icons/browse-repository-32.png"));
+        this.addComponent(new HeaderComponent(ApplicationData.getMessage("BrowserRepositoryView.title"), "/static/icons/browse-repository-32.png"));
         
         HorizontalLayout toolBarLayout = new HorizontalLayout();
         toolBarLayout.setWidth(100, UNITS_PERCENTAGE);
@@ -213,7 +213,7 @@ public class BrowserRepositoryView extends VerticalLayout implements View, Actio
     public void handleAction(Action action, Object sender, Object target) {
         if (this.deleteAction == action) {
             final FileNavigationNode node = (FileNavigationNode) target;
-            ConfirmationDialogUtil.showConfirmationDialog(getWindow(), Messages.INSTANCE.getString("BrowserRepositoryView.delete", getLocale()), Messages.INSTANCE.getString("BrowserRepositoryView.delete.message", getLocale()).replace("{}", node.name), new ConfirmationDialogListener() {
+            ConfirmationDialogUtil.showConfirmationDialog(getWindow(), ApplicationData.getMessage("BrowserRepositoryView.delete"), ApplicationData.getMessage("BrowserRepositoryView.delete.message").replace("{}", node.name), new ConfirmationDialogListener() {
                 
                 @Override
                 public void onConfirmation() {
