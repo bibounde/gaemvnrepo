@@ -14,7 +14,7 @@ First you need to create the GAE Application that will contain the Maven2 reposi
 
 >3 Sets the field with appropriate values. Choose a valid application name and keep it because you need it later
 
-!![GAE Application Creation](/readme/gaecreation.png)
+![GAE Application Creation](/bibounde/gaemvnrepo/raw/master/readme/gaecreation.png)!
 
 ## To be continued...
 
