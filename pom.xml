@@ -11,6 +11,12 @@
 
 	<name>gaemvnrepo</name>
 
+	<scm>
+		<connection>scm:git:git://github.com/bibounde/gaemvnrepo.git</connection>
+		<url>scm:git://github.com/bibounde/gaemvnrepo.git</url>
+		<developerConnection>scm:git:git://github.com/bibounde/gaemvnrepo.git</developerConnection>
+	</scm>
+
 	<repositories>
 		<repository>
 			<id>vaadin-snapshots</id>
@@ -404,17 +410,17 @@
 			</properties>
 		</profile>
 		<profile>
-            <id>prod</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <env.mode>PRODUCTION</env.mode>
-                <gae.application.version>1</gae.application.version>
-                <gae.application.name>gaemvnrepoprod</gae.application.name>
-                <gae.application.build>${user.name}</gae.application.build>
-            </properties>
-        </profile>
+			<id>prod</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<env.mode>PRODUCTION</env.mode>
+				<gae.application.version>1</gae.application.version>
+				<gae.application.name>gaemvnrepoprod</gae.application.name>
+				<gae.application.build>${user.name}</gae.application.build>
+			</properties>
+		</profile>
 	</profiles>
 
 </project>
