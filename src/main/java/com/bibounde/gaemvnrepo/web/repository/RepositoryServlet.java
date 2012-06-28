@@ -83,9 +83,17 @@ public class RepositoryServlet extends AbstractSpringServlet {
                     } else {
                         if (file.isFile()) {
                             logger.debug("{} file found. Returns content", filePath);
-                            resp.setContentLength(file.getContent().length);
-                            resp.getOutputStream().write(file.getContent());
-                            resp.setStatus(HttpServletResponse.SC_OK);
+                            byte[] bytes = file.getContent();
+                            if (bytes == null) {
+                                logger.error("Unable to find content of {}", filePath);
+                                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                            } else {
+                                resp.setContentLength(file.getContent().length);
+                                resp.getOutputStream().write(file.getContent());
+                                resp.setStatus(HttpServletResponse.SC_OK);
+                            }
+                            
+                            
                         } else {
                             logger.debug("{} directory found. Returns list", filePath);
                             List<FileNavigationNode> nodes = this.repositoryService.getFileNavigationNodes(filePath, StringUtils.countOccurrencesOf(filePath, "/"));

@@ -160,6 +160,10 @@ public class File implements Serializable {
         BlobstoreService blobStoreService = BlobstoreServiceFactory.getBlobstoreService();
         BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(this.contentKey);
         
+        if (blobInfo == null) {
+            return null;
+        }
+        
         byte[] content = new byte[0];
         
         long amountLeftToRead = blobInfo.getSize();
