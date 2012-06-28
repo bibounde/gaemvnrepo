@@ -405,6 +405,9 @@
 		</profile>
 		<profile>
             <id>prod</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <env.mode>PRODUCTION</env.mode>
                 <gae.application.version>1</gae.application.version>
