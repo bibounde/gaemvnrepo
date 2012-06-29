@@ -98,10 +98,17 @@ public class RepositoryServiceImpl implements RepositoryService {
     }
 
     @Override
-    public void uploadFile(String name, String filePath, byte[] content, String mime) throws TechnicalException, BusinessException {
+    public void uploadFile(String name, String filePath, byte[] content, String contentType) throws TechnicalException, BusinessException {
+        
+        String[] splittedPath = filePath.split("/");
+        String fileName = splittedPath[splittedPath.length - 1];
+        
         BlobKey blobKey = null;
         if (content != null) {
-            blobKey = this.storeFileContent(content, mime);
+            blobKey = this.storeFileContent(fileName, content, contentType);
+            logger.debug("Blob key of {} is {}", fileName, blobKey.getKeyString());
+        } else {
+            logger.warn("Upload file without content");
         }
         
         String creatorName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -120,8 +127,6 @@ public class RepositoryServiceImpl implements RepositoryService {
         try {
             tx.begin();
 
-            String[] splittedPath = filePath.split("/");
-
             Repository repository = this.repositoryDao.findByName(name, pm);
             if (repository == null) {
                 throw new BusinessException(name + " is not a valid repository");
@@ -136,7 +141,6 @@ public class RepositoryServiceImpl implements RepositoryService {
                 logger.debug("File {} exists. Need to delete first", filePath);
                 blobKeyToDelete = found.getContentKey().getKeyString();
                 repository.getFiles().remove(found);
-                //pm.deletePersistent(found);
             } else {
                 // Check if parent creation is needed
                 logger.debug("Checks if parent of {} must be created", filePath);
@@ -169,14 +173,13 @@ public class RepositoryServiceImpl implements RepositoryService {
             file.setCreator(creatorName);
             file.setDepth(splittedPath.length - 2);
             file.setFile(true);
-            file.setName(splittedPath[splittedPath.length - 1]);
+            file.setName(fileName);
             file.setPath(filePath);
             file.setContentKey(blobKey);
             repository.getFiles().add(file);
             
-            List<File> filesToDelete = new ArrayList<File>();
-            
             // Snapshots management
+            List<File> filesToDelete = new ArrayList<File>();
             if (repository.isSnapshots() && filePath.matches(SNAPSHOTS_FILE_REGEX)) {
                 logger.debug("{} is a snapshot. Need to deprecate old files", filePath);
                 String dirPath = this.getDirPath(filePath);
@@ -222,12 +225,13 @@ public class RepositoryServiceImpl implements RepositoryService {
     
     /**
      * Store file content in Blobstore
+     * @param fileName file name
      * @param content file content
-     * @param mime content type
+     * @param contentType content type
      * @return BlobKey
      * @throws TechnicalException
      */
-    private BlobKey storeFileContent(byte[] content, String mime) throws TechnicalException {
+    private BlobKey storeFileContent(String fileName, byte[] content, String contentType) throws TechnicalException {
         PersistenceManager pm = null;
         Transaction tx = null;
         try {
@@ -239,7 +243,7 @@ public class RepositoryServiceImpl implements RepositoryService {
         try {
             tx.begin();
             FileService fileService = FileServiceFactory.getFileService();
-            AppEngineFile blobFile = fileService.createNewBlobFile(mime);
+            AppEngineFile blobFile = fileService.createNewBlobFile(contentType, fileName);
             // Open a channel to write to it
             boolean lock = true;
             FileWriteChannel writeChannel = null;

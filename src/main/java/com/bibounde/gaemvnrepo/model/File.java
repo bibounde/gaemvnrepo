@@ -10,6 +10,8 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
@@ -21,6 +23,9 @@ import com.google.appengine.api.datastore.Key;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 //Not supported by GAE @Unique(name = "FILE_UNIQUE_IDX", members = { "path" })
 public class File implements Serializable {
+    
+    @SuppressWarnings("unused")
+    private static final Logger logger = LoggerFactory.getLogger(File.class);
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -161,6 +166,7 @@ public class File implements Serializable {
         BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(this.contentKey);
         
         if (blobInfo == null) {
+            logger.warn("Unable to find key {} of {}", this.contentKey.getKeyString(), this.name);
             return null;
         }
         
@@ -188,5 +194,18 @@ public class File implements Serializable {
      */
     public BlobKey getContentKey() {
         return contentKey;
+    }
+
+    /**
+     * @return the contentType
+     */
+    public String getContentType() {
+        BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(this.contentKey);
+        
+        if (blobInfo == null) {
+            return null;
+        }
+        
+        return blobInfo.getContentType();
     }
 }

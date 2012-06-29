@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tika.Tika;
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,17 +44,22 @@ public class RepositoryServlet extends AbstractSpringServlet {
     
     private Configuration freeMarkerConfiguration;
     
+    //Tools to detect content type because maven does not send it
+    private Tika tika;
+    
     @Override
     public void init() throws ServletException {
         this.freeMarkerConfiguration = new Configuration();
         this.freeMarkerConfiguration.setServletContextForTemplateLoading(getServletContext(), "WEB-INF/templates");
+        
+        this.tika = new Tika();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String filePath = this.getFilePath(req);
         
-        logger.debug("Maven attempt to retrieve {}", filePath);
+        logger.debug("Maven or web user attempt to retrieve {}", filePath);
         
         try {
             
@@ -85,7 +93,7 @@ public class RepositoryServlet extends AbstractSpringServlet {
                             logger.debug("{} file found. Returns content", filePath);
                             byte[] bytes = file.getContent();
                             if (bytes == null) {
-                                logger.error("Unable to find content of {}", filePath);
+                                logger.error("Unable to find content of {} with blobkey", filePath, file.getContentKey().getKeyString());
                                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                             } else {
                                 resp.setContentLength(file.getContent().length);
@@ -157,13 +165,17 @@ public class RepositoryServlet extends AbstractSpringServlet {
                 //Creates content
                 output = new ByteArrayOutputStream();
                 InputStream input = req.getInputStream();
+                
                 byte[] buffer = new byte[1024];
                 for (int length = 0; (length = input.read(buffer)) > -1;){
                     output.write(buffer, 0, length);
                 }
+                output.flush();
                 byte[] content = output.toByteArray();
-
-                this.repositoryService.uploadFile(this.getRepositoryName(reqFilePath), reqFilePath, content, req.getContentType());
+                
+                String contentType = tika.detect(Arrays.copyOf(content, content.length < 1024 ? content.length : 1024), reqFilePath.substring(reqFilePath.lastIndexOf("/")));
+                
+                this.repositoryService.uploadFile(this.getRepositoryName(reqFilePath), reqFilePath, content, contentType);
                 
                 logger.debug("{} successfully uploaded", reqFilePath);
                 resp.setStatus(HttpServletResponse.SC_OK);
